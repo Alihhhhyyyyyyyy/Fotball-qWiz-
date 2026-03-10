@@ -35,8 +35,10 @@ function playSound(type) {
 }
 
 
-// --- Database (50 Players) ---
-const db = [    { name: "ليونيل ميسي", infos: ["فزت بالكرة الذهبية 8 مرات.", "قُدت الأرجنتين للفوز بكأس العالم 2022.", "أنا الهداف التاريخي لنادي برشلونة."], decoys: ["كريستيانو رونالدو", "نيمار جونيور"], mainClub: "برشلونة", nationality: "🇦🇷" },
+// --- Database ---
+const db = [
+    //
+    // الصق قائمة اللاعبين الـ    { name: "ليونيل ميسي", infos: ["فزت بالكرة الذهبية 8 مرات.", "قُدت الأرجنتين للفوز بكأس العالم 2022.", "أنا الهداف التاريخي لنادي برشلونة."], decoys: ["كريستيانو رونالدو", "نيمار جونيور"], mainClub: "برشلونة", nationality: "🇦🇷" },
     { name: "كريستيانو رونالدو", infos: ["أنا الهداف التاريخي لكرة القدم.", "فزت بدوري الأبطال 5 مرات.", "فزت ببطولة أمم أوروبا 2016."], decoys: ["ليونيل ميسي", "لويس فيغو"], mainClub: "ريال مدريد", nationality: "🇵🇹" },
     { name: "محمد صلاح", infos: ["فزت بالحذاء الذهبي للدوري الإنجليزي 3 مرات.", "فزت بدوري الأبطال مع ليفربول 2019.", "بدأت مسيرتي الأوروبية في بازل."], decoys: ["رياض محرز", "حكيم زياش"], mainClub: "ليفربول", nationality: "🇪🇬" },
     { name: "زين الدين زيدان", infos: ["فزت بكأس العالم 1998.", "فزت بدوري الأبطال كلاعب ومدرب مع ريال مدريد.", "اشتهرت بحركة 'المروحة'."], decoys: ["ميشيل بلاتيني", "تييري هنري"], mainClub: "ريال مدريد", nationality: "🇫🇷" },
@@ -91,17 +93,20 @@ const db = [    { name: "ليونيل ميسي", infos: ["فزت بالكرة ا
     { name: "توني كروس", infos: ["فزت بكأس العالم 2014 مع ألمانيا.", "أتميز بدقة تمريراتي التي تتجاوز 90% في معظم المباريات.", "أعلنت اعتزالي بعد يورو 2024."], decoys: ["لوكا مودريتش", "إيلكاي غوندوغان"], mainClub: "ريال مدريد", nationality: "🇩🇪" },
     { name: "جانلويجي بوفون", infos: ["أنا أحد أعظم حراس المرمى في التاريخ ومسيرتي امتدت لسنوات طويلة جدًا.", "فزت بكأس العالم 2006 مع إيطاليا.", "قضيت معظم مسيرتي الأسطورية مع يوفنتوس."], decoys: ["إيكر كاسياس", "بيتر تشيك"], mainClub: "يوفنتوس", nationality: "🇮🇹" },
     { name: "إيكر كاسياس", infos: ["كنت قائد منتخب إسبانيا وريال مدريد لسنوات طويلة.", "فزت بكأس العالم وبطولتي يورو متتاليتين مع إسبانيا.", "أُعرف بلقب 'القديس' بسبب تصدياتي الإعجازية."], decoys: ["جانلويجي بوفون", "فيكتور فالديز"], mainClub: "ريال مدريد", nationality: "🇪🇸" }
+ 55 التي أعطيتها لك سابقًا هنا
+    //
 ];
+
 // --- Config ---
 const levels = [ { name: "مبتدئ", minScore: 0 }, { name: "هاوٍ", minScore: 500 }, { name: "محترف", minScore: 1500 }, { name: "خبير", minScore: 4000 }, { name: "أسطورة", minScore: 10000 } ];
 const POWERUP_COSTS = { '5050': 15, 'nation': 20, 'club': 25, 'hint': 30 };
-const INITIAL_COINS = 100;
+const INITIAL_CASH = 100;
 const QUESTION_TIME = 20;
 const CHALLENGE_MODE_DURATION = 60;
 
 // --- Game State ---
 let gameMode = 'normal';
-let currentQuestion = {}, currentInfoIndex = 0, score = 0, potentialPoints = 30, streak = 0, coins = 0;
+let currentQuestion = {}, currentInfoIndex = 0, score = 0, potentialPoints = 30, streak = 0, cash = 0;
 let normalHighScore = 0, challengeHighScore = 0;
 let bestStreak = 0;
 let powerupsUsedCount = 0;
@@ -117,7 +122,7 @@ const startChallengeBtn = document.getElementById('start-challenge-btn');
 const gameModeDisplay = document.getElementById('game-mode-display');
 const mainTimerDisplay = document.getElementById('main-timer-display');
 const scoreEl = document.getElementById('score');
-const coinsDisplay = document.getElementById('coins-display');
+const cashDisplay = document.getElementById('cash-display');
 const potentialPointsEl = document.getElementById('potential-points');
 const infoBoxEl = document.getElementById('info-box');
 const nextInfoBtn = document.getElementById('next-info-btn');
@@ -158,7 +163,7 @@ function startGame(mode) {
     gameMode = mode;
     score = 0;
     streak = 0;
-    coins = INITIAL_COINS;
+    cash = INITIAL_CASH;
     bestStreak = 0;
     powerupsUsedCount = 0;
     usedPlayerIndices = [];
@@ -268,15 +273,16 @@ function resetQuestionUI() {
     infoBoxEl.innerHTML = '';
     choicesEl.innerHTML = '';
     nextInfoBtn.disabled = false;
+    // Enable all powerups at the start of a new question
+    Object.values(powerups).forEach(btn => btn.disabled = false);
     updateUI();
 }
 
 function displayInfo(infoText) {
     const info = document.createElement('p');
     info.innerHTML = infoText || `- ${currentQuestion.infos[currentInfoIndex]}`;
-    info.classList.add('fade-in'); // <-- أضف هذا السطر
+    info.classList.add('fade-in');
     infoBoxEl.appendChild(info);
-
 }
 
 function createChoices() {
@@ -300,16 +306,16 @@ function checkAnswer(selectedChoice) {
         if (streak > bestStreak) {
             bestStreak = streak;
         }
-        let earnedCoins = Math.floor(potentialPoints / 10);
+        let earnedCash = Math.floor(potentialPoints / 10);
         if (gameMode === 'normal') {
             score += potentialPoints;
         } else {
             score++;
         }
-        coins += earnedCoins;
+        cash += earnedCash;
         let resultMsg = `إجابة صحيحة!`;
         if (gameMode === 'normal') resultMsg += ` +${potentialPoints} نقطة`;
-        resultMsg += ` | +${earnedCoins} عملة`;
+        resultMsg += ` | +${earnedCash} نقود`;
         
         showResult(true, resultMsg);
         setTimeout(() => { resultOverlayEl.style.display = 'none'; loadQuestion(); }, 1500);
@@ -335,11 +341,14 @@ function showResult(isCorrect, text) {
 function updateUI() {
     const scoreLabel = gameMode === 'normal' ? "النقاط" : "الصحيحة";
     scoreEl.textContent = `${scoreLabel}: ${score}`;
-    coinsDisplay.textContent = `💰 ${coins}`;
+    cashDisplay.textContent = `💲 ${cash}`;
     potentialPointsEl.textContent = `النقاط: ${potentialPoints}`;
     
     Object.entries(powerups).forEach(([key, btn]) => {
-        btn.disabled = coins < POWERUP_COSTS[key];
+        // Disable button only if it hasn't been used in this question yet
+        if (!btn.disabled) {
+            btn.disabled = cash < POWERUP_COSTS[key];
+        }
     });
     
     if (gameMode === 'normal') {
@@ -370,22 +379,34 @@ nextInfoBtn.addEventListener('click', () => {
 Object.entries(powerups).forEach(([key, btn]) => {
     btn.addEventListener('click', () => {
         const cost = POWERUP_COSTS[key];
+        if (btn.disabled && cash < cost) return; // Already disabled for this question
 
-        if (btn.disabled) return; // لمنع الضغط على الزر المعطل
-
-        if (coins >= cost) {
-            // لديك عملات كافية
-            playSound('click'); // صوت نجاح
-            coins -= cost;
+        if (cash >= cost) {
+            playSound('click');
+            cash -= cost;
             powerupsUsedCount++;
             btn.disabled = true;
+
             switch (key) {
-                // ... (case statements remain the same) ...
+                case '5050':
+                    const buttons = Array.from(choicesEl.children);
+                    const wrongChoice = buttons.find(b => !b.disabled && b.textContent !== currentQuestion.name);
+                    if(wrongChoice) wrongChoice.disabled = true;
+                    break;
+                case 'nation':
+                    displayInfo(`<b>تلميح:</b> جنسية اللاعب هي ${currentQuestion.nationality}`);
+                    break;
+                case 'club':
+                    displayInfo(`<b>تلميح:</b> من أبرز الأندية التي لعب لها ${currentQuestion.mainClub}`);
+                    break;
+                case 'hint':
+                    displayInfo(`<b>تلميح:</b> اسم اللاعب يبدأ بحرف '${currentQuestion.name[0]}'`);
+                    break;
             }
             updateUI();
+
         } else {
-            // ليس لديك عملات كافية
-            playSound('wrong'); // <-- هذا هو التعديل الوحيد في قسم else
+            playSound('wrong');
         }
     });
 });
@@ -393,7 +414,7 @@ Object.entries(powerups).forEach(([key, btn]) => {
 
 startNormalBtn.addEventListener('click', () => startGame('normal'));
 startChallengeBtn.addEventListener('click', () => startGame('challenge'));
-restartBtn.addEventListener('click', () => startGame(gameMode)); // Modified to restart the same mode
+restartBtn.addEventListener('click', () => startGame(gameMode));
 backToMenuBtn.addEventListener('click', initGame);
 
 // Add click sound to all buttons
