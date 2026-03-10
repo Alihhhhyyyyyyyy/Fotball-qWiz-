@@ -90,7 +90,7 @@ const db = [    { name: "ليونيل ميسي", infos: ["فزت بالكرة ا
     { name: "فيكتور أوسيمين", infos: ["قُدت نابولي للفوز بالدوري الإيطالي لأول مرة منذ عقود.", "أنا مهاجم نيجيري.", "اشتهر بارتداء قناع واقٍ على وجهي."], nationality: "نيجيريا", mainClub: "نابولي" },
     { name: "خفيتشا كفاراتسخيليا", infos: ["أنا لاعب من جورجيا.", "لقبت بـ 'كفارادونا' بعد تألقي مع نابولي.", "فزت بالدوري الإيطالي في أول موسم لي."], nationality: "جورجيا", mainClub: "نابولي" },
     { name: "جود بيلينجهام", infos: ["انتقلت إلى ريال مدريد في سن مبكرة وتألقت فورًا.", "أنا لاعب خط وسط إنجليزي.", "بدأت مسيرتي في نادي برمنغهام سيتي."], nationality: "إنجلترا", mainClub: "ريال مدريد" },
-    { name: "بوكايو ساكا", infos: ["أنا لاعب شاب في نادي أرسنال ومنتخب إنجلترا.", "ألعب في مركز الجناح.", "اشتهرت بقدرتي على المراوغة وصناعة الأهداف."], nationality: "إنجلترا", mainClub: "أرسنال" }
+    { name: "بوكايو ساكا", infos: ["أنا لاعب شاب في نادي أرسنال ومنتخب إنجلترا.", "ألعب في مركز الجناح.", "اشتهرت بقدرتي على المراوغة وصناعة الأهداف."], nationality: "إنجلترا", mainClub: "أرسنال"  
 ];
 
 // --- Config ---
@@ -113,13 +113,13 @@ let questionTimer, mainTimer;
 const startScreen = document.getElementById('start-screen');
 const gameContainer = document.getElementById('game-container');
 const endScreen = document.getElementById('end-screen');
-const startNormalBtn = document.getElementById('start-normal-btn');
-const startChallengeBtn = document.getElementById('start-challenge-btn');
+const playBtn = document.getElementById('play-btn');
+const leaderboardBtn = document.getElementById('leaderboard-btn');
+const settingsBtn = document.getElementById('settings-btn');
 const gameModeDisplay = document.getElementById('game-mode-display');
 const mainTimerDisplay = document.getElementById('main-timer-display');
-const scoreEl = document.getElementById('score');
+const scoreDisplay = document.getElementById('score-display');
 const cashDisplay = document.getElementById('cash-display');
-const potentialPointsEl = document.getElementById('potential-points');
 const infoBoxEl = document.getElementById('info-box');
 const nextInfoBtn = document.getElementById('next-info-btn');
 const choicesEl = document.getElementById('choices');
@@ -128,9 +128,8 @@ const resultTextEl = document.getElementById('result-text');
 const finalScoreEl = document.getElementById('final-score');
 const finalScoreLabel = document.getElementById('final-score-label');
 const restartBtn = document.getElementById('restart-btn');
+const shareBtn = document.getElementById('share-btn');
 const backToMenuBtn = document.getElementById('back-to-menu-btn');
-const highScoreDisplay = document.getElementById('high-score-display');
-const challengeHighScoreDisplay = document.getElementById('challenge-high-score-display');
 const highScoreEndDisplay = document.getElementById('high-score-end-display');
 const challengeHighScoreEndDisplay = document.getElementById('challenge-high-score-end-display');
 const bestStreakDisplay = document.getElementById('best-streak-display');
@@ -147,8 +146,6 @@ const powerups = {
 function initGame() {
     normalHighScore = localStorage.getItem('knowThePlayerNormalHighScore') || 0;
     challengeHighScore = localStorage.getItem('knowThePlayerChallengeHighScore') || 0;
-    highScoreDisplay.textContent = normalHighScore;
-    challengeHighScoreDisplay.textContent = challengeHighScore;
     
     startScreen.classList.remove('hidden');
     gameContainer.classList.add('hidden');
@@ -269,7 +266,6 @@ function resetQuestionUI() {
     infoBoxEl.innerHTML = '';
     choicesEl.innerHTML = '';
     nextInfoBtn.disabled = false;
-    // Enable all powerups at the start of a new question
     Object.values(powerups).forEach(btn => btn.disabled = false);
     updateUI();
 }
@@ -281,15 +277,15 @@ function displayInfo(infoText) {
     infoBoxEl.appendChild(info);
 }
 
-// ... (دوال أخرى مثل initGame, startGame, loadQuestion) ...
-
-function displayInfo(infoText) {
-    // ... كود دالة عرض المعلومات ...
-}
-
-// ها هي الدالة التي تبحث عنها، مباشرة بعد دالة displayInfo
 function createChoices() {
-    const choices = [...currentQuestion.decoys, currentQuestion.name].sort(() => Math.random() - 0.5);
+    const choices = [currentQuestion.name];
+    const otherPlayers = db.filter(player => player.name !== currentQuestion.name);
+    while (choices.length < 3 && otherPlayers.length > 0) {
+        const randomIndex = Math.floor(Math.random() * otherPlayers.length);
+        const decoy = otherPlayers.splice(randomIndex, 1)[0].name;
+        choices.push(decoy);
+    }
+    choices.sort(() => Math.random() - 0.5);
     choicesEl.innerHTML = '';
     choices.forEach(choice => {
         const button = document.createElement('button');
@@ -297,10 +293,6 @@ function createChoices() {
         button.onclick = () => checkAnswer(choice);
         choicesEl.appendChild(button);
     });
-}
-
-function checkAnswer(selectedChoice) {
-    // ... كود دالة فحص الإجابة ...
 }
 
 function checkAnswer(selectedChoice) {
@@ -346,13 +338,10 @@ function showResult(isCorrect, text) {
 }
 
 function updateUI() {
-    const scoreLabel = gameMode === 'normal' ? "النقاط" : "الصحيحة";
-    scoreEl.textContent = `${scoreLabel}: ${score}`;
+    scoreDisplay.textContent = `🏆 ${score}`;
     cashDisplay.textContent = `💲 ${cash}`;
-    potentialPointsEl.textContent = `النقاط: ${potentialPoints}`;
     
     Object.entries(powerups).forEach(([key, btn]) => {
-        // Disable button only if it hasn't been used in this question yet
         if (!btn.disabled) {
             btn.disabled = cash < POWERUP_COSTS[key];
         }
@@ -386,7 +375,7 @@ nextInfoBtn.addEventListener('click', () => {
 Object.entries(powerups).forEach(([key, btn]) => {
     btn.addEventListener('click', () => {
         const cost = POWERUP_COSTS[key];
-        if (btn.disabled && cash < cost) return; // Already disabled for this question
+        if (btn.disabled && cash < cost) return;
 
         if (cash >= cost) {
             playSound('click');
@@ -418,13 +407,33 @@ Object.entries(powerups).forEach(([key, btn]) => {
     });
 });
 
+playBtn.addEventListener('click', () => {
+    // For now, we will add a simple choice later.
+    // Let's default to 'normal' mode.
+    startGame('normal');
+});
 
-startNormalBtn.addEventListener('click', () => startGame('normal'));
-startChallengeBtn.addEventListener('click', () => startGame('challenge'));
 restartBtn.addEventListener('click', () => startGame(gameMode));
 backToMenuBtn.addEventListener('click', initGame);
 
-// Add click sound to all buttons
+shareBtn.addEventListener('click', () => {
+    const gameUrl = "https://alihhhhyyyyyyyy.github.io/Fotball-qWiz-/";
+    const modeText = gameMode === 'normal' ? "الوضع العادي" : "تحدي الـ 60 ثانية";
+    const scoreText = gameMode === 'normal' ? `${score} نقطة` : `${score} إجابة صحيحة`;
+
+    const shareText = `🏆 لقد حققت ${scoreText} في لعبة "اعرف اللاعب" (${modeText})! \n\nهل يمكنك التفوق عليّ؟ 🤔\n\nالعب الآن: ${gameUrl}`;
+
+    navigator.clipboard.writeText(shareText).then(() => {
+        shareBtn.textContent = "✅ تم النسخ!";
+        setTimeout(() => {
+            shareBtn.textContent = "🏆 مشاركة النتيجة";
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+        alert("فشل نسخ النتيجة. يرجى النسخ يدويًا.");
+    });
+});
+
 document.querySelectorAll('button').forEach(button => {
     button.addEventListener('click', () => playSound('click'));
 });
