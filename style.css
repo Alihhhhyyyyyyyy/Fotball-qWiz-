@@ -1,16 +1,16 @@
-/* --- General Styles & Stadium Lights Theme --- */
-:root {
-    --bg-color: #0a0f0b;
-    --primary-surface: #121a13;
-    --secondary-surface: #1a261c;
-    --border-color: #2a3f2d;
-    --text-color: #e8f5e9;
-    --text-muted: #a5d6a7;
-    --accent-color: #fdd835; /* Bright Gold/Yellow */
-    --accent-hover: #fff176;
-    --danger-color: #ef5350;
-}
 
+/* --- Royal Blue & Gold Theme --- */
+:root {
+    --bg-color: #0d1b2a; /* Deep Midnight Blue */
+    --primary-surface: #1b263b; /* Darker Blue Surface */
+    --secondary-surface: #2a3b52; /* Lighter Blue Surface */
+    --border-color: #415a77; /* Muted Blue for Borders */
+    --text-color: #e0e1dd; /* Off-white for text */
+    --text-muted: #a9b4c2; /* Muted text */
+    --accent-color: #ffd700; /* Bright, pure Gold */
+    --accent-hover: #ffec80; /* Lighter Gold for hover */
+    --danger-color: #e57373; /* Softer Red */
+}
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap');
 
 body {
