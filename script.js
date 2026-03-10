@@ -1,3 +1,41 @@
+// --- Audio Context for Sounds ---
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSound(type) {
+    if (!audioCtx) return;
+    // Check if context is suspended (due to browser policy) and resume it
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+    
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.01);
+
+    if (type === 'correct') {
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+    } else if (type === 'wrong') {
+        oscillator.type = 'square';
+        oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2);
+    } else if (type === 'click') {
+        oscillator.type = 'triangle';
+        oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+    }
+
+    oscillator.start(audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.2);
+    oscillator.stop(audioCtx.currentTime + 0.2);
+}
+
+
 // --- Database (50 Players) ---
 const db = [
     { name: "ليونيل ميسي", infos: ["فزت بالكرة الذهبية 8 مرات.", "قُدت الأرجنتين للفوز بكأس العالم 2022.", "أنا الهداف التاريخي لنادي برشلونة."], decoys: ["كريستيانو رونالدو", "نيمار جونيور"], mainClub: "برشلونة", nationality: "🇦🇷" },
@@ -142,13 +180,14 @@ function startQuestionTimer() {
     }, 100);
 
     questionTimer = setInterval(() => {
-        // In normal mode, time out ends the game. In challenge, it just moves to the next question.
         if (gameMode === 'normal') {
             clearInterval(questionTimer);
+            playSound('wrong');
             showResult(false, `انتهى الوقت! اللاعب هو: ${currentQuestion.name}`);
             setTimeout(() => { resultOverlayEl.style.display = 'none'; endGame(); }, 2500);
         } else {
             clearInterval(questionTimer);
+            playSound('wrong');
             showResult(false, `انتهى الوقت!`);
             setTimeout(() => { resultOverlayEl.style.display = 'none'; loadQuestion(); }, 2000);
         }
@@ -199,6 +238,7 @@ function checkAnswer(selectedChoice) {
     let isCorrect = selectedChoice === currentQuestion.name;
     
     if (isCorrect) {
+        playSound('correct');
         let earnedCoins = Math.floor(potentialPoints / 10);
         if (gameMode === 'normal') {
             score += potentialPoints;
@@ -214,6 +254,7 @@ function checkAnswer(selectedChoice) {
         showResult(true, resultMsg);
         setTimeout(() => { resultOverlayEl.style.display = 'none'; loadQuestion(); }, 1500);
     } else {
+        playSound('wrong');
         streak = 0;
         if (gameMode === 'normal') {
             showResult(false, `إجابة خاطئة! اللاعب هو: ${currentQuestion.name}`);
@@ -297,5 +338,12 @@ startNormalBtn.addEventListener('click', () => startGame('normal'));
 startChallengeBtn.addEventListener('click', () => startGame('challenge'));
 restartBtn.addEventListener('click', initGame);
 
+// Add click sound to all buttons
+document.querySelectorAll('button').forEach(button => {
+    button.addEventListener('click', () => playSound('click'));
+});
+
+
 // --- Initial Load ---
 initGame();
+
