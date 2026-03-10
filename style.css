@@ -13,7 +13,7 @@
 }
 
 body {
-    font-family: 'Tajawal', sans-serif; /* Using a nice Arabic font */
+    font-family: 'Tajawal', sans-serif;
     background-color: var(--bg-color);
     color: var(--text-color);
     margin: 0;
@@ -38,7 +38,26 @@ body {
 .hidden { display: none !important; }
 
 /* --- Screens --- */
-.start-screen, .end-screen {
+.start-screen {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* To center content vertically */
+    
+    /* --- ضع رابط صورتك هنا --- */
+    /* --- ابحث في جوجل عن صورة، انسخ رابطها، وضعه مكان الرابط الحالي --- */
+    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)), url("https://i.imgur.com/33EaYq5.jpg");
+    
+    background-size: cover;
+    background-position: center;
+    padding: 50px 20px;
+    margin: -20px; /* To fill the parent padding */
+    border-radius: 20px;
+    min-height: 500px; /* Give it some height */
+}
+
+.end-screen {
     text-align: center;
     display: flex;
     flex-direction: column;
@@ -84,12 +103,8 @@ button {
 }
 
 /* --- Game Elements --- */
-.game-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    color: var(--text-muted);
+.game-header, .top-bar {
+    margin: 0 10px; /* Add some horizontal margin */
 }
 
 .player-level {
@@ -241,51 +256,61 @@ button {
     background-color: #3498db;
 }
 
-/* --- New Main Menu UI --- */
-.main-logo {
+/* --- New Sleek Main Menu UI --- */
+.game-title {
+    font-size: 3.5em;
+    color: #fff;
+    text-shadow: 2px 2px 10px rgba(0,0,0,0.7);
     margin-bottom: 30px;
+    margin-top: 0;
 }
-.main-logo img {
-    max-width: 80%;
-    height: auto;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-}
+
 .play-btn {
-    font-size: 2em !important;
+    font-size: 1.8em !important;
     padding: 15px 50px !important;
     border-radius: 50px !important;
     margin-bottom: 40px;
+    background: rgba(255, 255, 255, 0.15); /* Glass effect */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px); /* For Safari */
+    color: #fff;
 }
+
+.play-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-3px);
+}
+
 .main-menu-buttons {
     display: flex;
     gap: 20px;
 }
+
 .icon-btn {
     font-size: 1.8em;
-    background: var(--secondary-bg);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.1); /* Glass effect */
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px); /* For Safari */
+    color: #fff;
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: background-color 0.2s, transform 0.2s;
 }
+
 .icon-btn:hover {
-    background-color: var(--powerup-bg);
+    background: rgba(255, 255, 255, 0.2);
     transform: translateY(-3px);
 }
 
 /* --- New Top Bar UI --- */
 .top-bar {
     display: flex;
-    justify-content: space-around; /* Changed to space-around for better spacing */
+    justify-content: space-around;
     align-items: center;
     padding: 10px 15px;
-    background-color: var(--bg-color); /* Changed for better contrast */
+    background-color: var(--bg-color);
     border-radius: 15px;
     margin-bottom: 15px;
 }
