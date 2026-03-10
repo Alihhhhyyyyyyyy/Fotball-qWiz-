@@ -281,6 +281,13 @@ function displayInfo(infoText) {
     infoBoxEl.appendChild(info);
 }
 
+// ... (دوال أخرى مثل initGame, startGame, loadQuestion) ...
+
+function displayInfo(infoText) {
+    // ... كود دالة عرض المعلومات ...
+}
+
+// ها هي الدالة التي تبحث عنها، مباشرة بعد دالة displayInfo
 function createChoices() {
     const choices = [...currentQuestion.decoys, currentQuestion.name].sort(() => Math.random() - 0.5);
     choicesEl.innerHTML = '';
@@ -290,6 +297,10 @@ function createChoices() {
         button.onclick = () => checkAnswer(choice);
         choicesEl.appendChild(button);
     });
+}
+
+function checkAnswer(selectedChoice) {
+    // ... كود دالة فحص الإجابة ...
 }
 
 function checkAnswer(selectedChoice) {
