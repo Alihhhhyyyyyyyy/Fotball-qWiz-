@@ -274,7 +274,9 @@ function resetQuestionUI() {
 function displayInfo(infoText) {
     const info = document.createElement('p');
     info.innerHTML = infoText || `- ${currentQuestion.infos[currentInfoIndex]}`;
+    info.classList.add('fade-in'); // <-- أضف هذا السطر
     infoBoxEl.appendChild(info);
+
 }
 
 function createChoices() {
