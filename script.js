@@ -90,7 +90,8 @@ const db = [    { name: "ليونيل ميسي", infos: ["فزت بالكرة ا
     { name: "فيكتور أوسيمين", infos: ["قُدت نابولي للفوز بالدوري الإيطالي لأول مرة منذ عقود.", "أنا مهاجم نيجيري.", "اشتهر بارتداء قناع واقٍ على وجهي."], nationality: "نيجيريا", mainClub: "نابولي" },
     { name: "خفيتشا كفاراتسخيليا", infos: ["أنا لاعب من جورجيا.", "لقبت بـ 'كفارادونا' بعد تألقي مع نابولي.", "فزت بالدوري الإيطالي في أول موسم لي."], nationality: "جورجيا", mainClub: "نابولي" },
     { name: "جود بيلينجهام", infos: ["انتقلت إلى ريال مدريد في سن مبكرة وتألقت فورًا.", "أنا لاعب خط وسط إنجليزي.", "بدأت مسيرتي في نادي برمنغهام سيتي."], nationality: "إنجلترا", mainClub: "ريال مدريد" },
-    { name: "بوكايو ساكا", infos: ["أنا لاعب شاب في نادي أرسنال ومنتخب إنجلترا.", "ألعب في مركز الجناح.", "اشتهرت بقدرتي على المراوغة وصناعة الأهداف."], nationality: "إنجلترا", mainClub: "أرسنال"  
+    { name: "بوكايو ساكا", infos: ["أنا لاعب شاب في نادي أرسنال ومنتخب إنجلترا.", "ألعب في مركز الجناح.", "اشتهرت بقدرتي على المراوغة وصناعة الأهداف."], nationality: "إنجلترا", mainClub: "أرسنال" }
+
 ];
 
 // --- Config ---
@@ -113,9 +114,9 @@ let questionTimer, mainTimer;
 const startScreen = document.getElementById('start-screen');
 const gameContainer = document.getElementById('game-container');
 const endScreen = document.getElementById('end-screen');
-const playBtn = document.getElementById('play-btn');
-const leaderboardBtn = document.getElementById('leaderboard-btn');
-const settingsBtn = document.getElementById('settings-btn');
+const playBtn = document.getElementById('play-btn'); // This is now the play-card
+const leaderboardBtn = document.getElementById('leaderboard-btn'); // This is now an icon-card
+const settingsBtn = document.getElementById('settings-btn'); // This is now an icon-card
 const gameModeDisplay = document.getElementById('game-mode-display');
 const mainTimerDisplay = document.getElementById('main-timer-display');
 const scoreDisplay = document.getElementById('score-display');
@@ -362,7 +363,28 @@ function updateUI() {
 }
 
 // --- Event Listeners ---
+// This section is now CORRECT and will make the cards clickable
+
+playBtn.addEventListener('click', () => {
+    playSound('click');
+    // For now, we will add a simple choice later.
+    // Let's default to 'normal' mode.
+    startGame('normal');
+});
+
+leaderboardBtn.addEventListener('click', () => {
+    playSound('click');
+    alert("لوحة المتصدرين - سيتم إضافتها قريبًا!");
+});
+
+settingsBtn.addEventListener('click', () => {
+    playSound('click');
+    alert("الإعدادات - سيتم إضافتها قريبًا!");
+});
+
+
 nextInfoBtn.addEventListener('click', () => {
+    playSound('click');
     currentInfoIndex++;
     if (currentInfoIndex < currentQuestion.infos.length) {
         displayInfo();
@@ -407,12 +429,6 @@ Object.entries(powerups).forEach(([key, btn]) => {
     });
 });
 
-playBtn.addEventListener('click', () => {
-    // For now, we will add a simple choice later.
-    // Let's default to 'normal' mode.
-    startGame('normal');
-});
-
 restartBtn.addEventListener('click', () => startGame(gameMode));
 backToMenuBtn.addEventListener('click', initGame);
 
@@ -434,9 +450,8 @@ shareBtn.addEventListener('click', () => {
     });
 });
 
-document.querySelectorAll('button').forEach(button => {
-    button.addEventListener('click', () => playSound('click'));
-});
+// Remove the old general button click sound listener to avoid double sounds
+// document.querySelectorAll('button').forEach(button => { ... });
 
 // --- Initial Load ---
 initGame();
