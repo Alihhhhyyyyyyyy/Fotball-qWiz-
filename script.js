@@ -1,33 +1,52 @@
-
-// --- JavaScript with Timer and Coins ---
-
-// --- Database (Truncated for brevity) ---
+// --- Database (50 Players) ---
 const db = [
     { name: "ليونيل ميسي", infos: ["فزت بالكرة الذهبية 8 مرات.", "قُدت الأرجنتين للفوز بكأس العالم 2022.", "أنا الهداف التاريخي لنادي برشلونة."], decoys: ["كريستيانو رونالدو", "نيمار جونيور"], mainClub: "برشلونة", nationality: "🇦🇷" },
     { name: "كريستيانو رونالدو", infos: ["أنا الهداف التاريخي لكرة القدم.", "فزت بدوري الأبطال 5 مرات.", "فزت ببطولة أمم أوروبا 2016."], decoys: ["ليونيل ميسي", "لويس فيغو"], mainClub: "ريال مدريد", nationality: "🇵🇹" },
     { name: "محمد صلاح", infos: ["فزت بالحذاء الذهبي للدوري الإنجليزي 3 مرات.", "فزت بدوري الأبطال مع ليفربول 2019.", "بدأت مسيرتي الأوروبية في بازل."], decoys: ["رياض محرز", "حكيم زياش"], mainClub: "ليفربول", nationality: "🇪🇬" },
-    // ... Paste the full 50-player list here
+    { name: "زين الدين زيدان", infos: ["فزت بكأس العالم 1998.", "فزت بدوري الأبطال كلاعب ومدرب مع ريال مدريد.", "اشتهرت بحركة 'المروحة'."], decoys: ["ميشيل بلاتيني", "تييري هنري"], mainClub: "ريال مدريد", nationality: "🇫🇷" },
+    { name: "رونالدينيو", infos: ["فزت بكأس العالم 2002 والكرة الذهبية 2005.", "اشتهرت بأسلوبي المبهج والساحر.", "تلقيت تصفيقًا من جماهير ريال مدريد."], decoys: ["كاكا", "ريفالدو"], mainClub: "برشلونة", nationality: "🇧🇷" },
+    // Add the other 45 players here
 ];
 
 // --- Config ---
 const levels = [ { name: "مبتدئ", minScore: 0 }, { name: "هاوٍ", minScore: 500 }, { name: "محترف", minScore: 1500 }, { name: "خبير", minScore: 4000 }, { name: "أسطورة", minScore: 10000 } ];
 const POWERUP_COSTS = { '5050': 15, 'nation': 20, 'club': 25, 'hint': 30 };
 const INITIAL_COINS = 100;
-const QUESTION_TIME = 20; // 20 seconds
+const QUESTION_TIME = 20;
+const CHALLENGE_MODE_DURATION = 60; // 60 seconds for challenge mode
 
 // --- Game State ---
-let currentQuestion = {}, currentInfoIndex = 0, score = 0, potentialPoints = 30, streak = 0, highScore = 0, coins = 0;
+let gameMode = 'normal'; // 'normal' or 'challenge'
+let currentQuestion = {}, currentInfoIndex = 0, score = 0, potentialPoints = 30, streak = 0, coins = 0;
+let normalHighScore = 0, challengeHighScore = 0;
 let usedPlayerIndices = [];
-let timerInterval;
+let questionTimer, mainTimer;
 
 // --- DOM Elements ---
-const startScreen = document.getElementById('start-screen'), gameContainer = document.getElementById('game-container'), endScreen = document.getElementById('end-screen');
-const scoreEl = document.getElementById('score'), coinsDisplay = document.getElementById('coins-display'), potentialPointsEl = document.getElementById('potential-points');
-const infoBoxEl = document.getElementById('info-box'), nextInfoBtn = document.getElementById('next-info-btn'), choicesEl = document.getElementById('choices');
-const resultOverlayEl = document.getElementById('result-overlay'), resultTextEl = document.getElementById('result-text');
-const finalScoreEl = document.getElementById('final-score'), startBtn = document.getElementById('start-btn'), restartBtn = document.getElementById('restart-btn');
-const highScoreDisplay = document.getElementById('high-score-display'), highScoreEndDisplay = document.getElementById('high-score-end-display');
-const playerLevelEl = document.getElementById('player-level'), progressBarEl = document.getElementById('progress-bar');
+const startScreen = document.getElementById('start-screen');
+const gameContainer = document.getElementById('game-container');
+const endScreen = document.getElementById('end-screen');
+const startNormalBtn = document.getElementById('start-normal-btn');
+const startChallengeBtn = document.getElementById('start-challenge-btn');
+const gameModeDisplay = document.getElementById('game-mode-display');
+const mainTimerDisplay = document.getElementById('main-timer-display');
+const scoreEl = document.getElementById('score');
+const coinsDisplay = document.getElementById('coins-display');
+const potentialPointsEl = document.getElementById('potential-points');
+const infoBoxEl = document.getElementById('info-box');
+const nextInfoBtn = document.getElementById('next-info-btn');
+const choicesEl = document.getElementById('choices');
+const resultOverlayEl = document.getElementById('result-overlay');
+const resultTextEl = document.getElementById('result-text');
+const finalScoreEl = document.getElementById('final-score');
+const finalScoreLabel = document.getElementById('final-score-label');
+const restartBtn = document.getElementById('restart-btn');
+const highScoreDisplay = document.getElementById('high-score-display');
+const challengeHighScoreDisplay = document.getElementById('challenge-high-score-display');
+const highScoreEndDisplay = document.getElementById('high-score-end-display');
+const challengeHighScoreEndDisplay = document.getElementById('challenge-high-score-end-display');
+const playerLevelEl = document.getElementById('player-level');
+const progressBarEl = document.getElementById('progress-bar');
 const timerBar = document.getElementById('timer-bar');
 const powerups = {
     '5050': document.getElementById('powerup-5050'), 'nation': document.getElementById('powerup-nation'),
@@ -36,37 +55,84 @@ const powerups = {
 
 // --- Game Logic ---
 function initGame() {
-    highScore = localStorage.getItem('knowThePlayerHighScore') || 0;
-    highScoreDisplay.textContent = highScore;
-    Object.entries(powerups).forEach(([key, btn]) => btn.setAttribute('data-cost', POWERUP_COSTS[key]));
+    normalHighScore = localStorage.getItem('knowThePlayerNormalHighScore') || 0;
+    challengeHighScore = localStorage.getItem('knowThePlayerChallengeHighScore') || 0;
+    highScoreDisplay.textContent = normalHighScore;
+    challengeHighScoreDisplay.textContent = challengeHighScore;
+    
     startScreen.classList.remove('hidden');
     gameContainer.classList.add('hidden');
     endScreen.classList.add('hidden');
 }
 
-function startGame() {
-    score = 0; streak = 0; usedPlayerIndices = []; coins = INITIAL_COINS;
+function startGame(mode) {
+    gameMode = mode;
+    score = 0;
+    streak = 0;
+    coins = INITIAL_COINS;
+    usedPlayerIndices = [];
+    
     startScreen.classList.add('hidden');
     endScreen.classList.add('hidden');
     gameContainer.classList.remove('hidden');
+
+    if (gameMode === 'challenge') {
+        startMainTimer();
+        gameModeDisplay.textContent = "تحدي الـ 60 ثانية";
+        playerLevelEl.style.display = 'none';
+        progressBarEl.parentElement.style.display = 'none';
+    } else {
+        mainTimerDisplay.textContent = "";
+        gameModeDisplay.textContent = "الوضع العادي";
+        playerLevelEl.style.display = 'block';
+        progressBarEl.parentElement.style.display = 'block';
+    }
+    
     loadQuestion();
 }
 
-function endGame(reason) {
-    clearInterval(timerInterval);
-    if (score > highScore) {
-        highScore = score;
-        localStorage.setItem('knowThePlayerHighScore', highScore);
+function startMainTimer() {
+    clearInterval(mainTimer);
+    let timeLeft = CHALLENGE_MODE_DURATION;
+    mainTimerDisplay.textContent = `الوقت: ${timeLeft}`;
+    mainTimer = setInterval(() => {
+        timeLeft--;
+        mainTimerDisplay.textContent = `الوقت: ${timeLeft}`;
+        if (timeLeft <= 0) {
+            clearInterval(mainTimer);
+            clearInterval(questionTimer);
+            endGame();
+        }
+    }, 1000);
+}
+
+function endGame() {
+    clearInterval(mainTimer);
+    clearInterval(questionTimer);
+
+    if (gameMode === 'normal') {
+        if (score > normalHighScore) {
+            normalHighScore = score;
+            localStorage.setItem('knowThePlayerNormalHighScore', normalHighScore);
+        }
+    } else { // challenge mode
+        if (score > challengeHighScore) {
+            challengeHighScore = score;
+            localStorage.setItem('knowThePlayerChallengeHighScore', challengeHighScore);
+        }
     }
+    
+    finalScoreLabel.textContent = gameMode === 'normal' ? "نتيجتك النهائية:" : "الأسئلة الصحيحة:";
     finalScoreEl.textContent = score;
-    highScoreEndDisplay.textContent = highScore;
+    highScoreEndDisplay.textContent = normalHighScore;
+    challengeHighScoreEndDisplay.textContent = challengeHighScore;
+    
     gameContainer.classList.add('hidden');
     endScreen.classList.remove('hidden');
 }
 
-function startTimer() {
-    clearInterval(timerInterval);
-    let timeLeft = QUESTION_TIME;
+function startQuestionTimer() {
+    clearInterval(questionTimer);
     timerBar.style.transition = 'none';
     timerBar.style.width = '100%';
     
@@ -75,14 +141,18 @@ function startTimer() {
         timerBar.style.width = '0%';
     }, 100);
 
-    timerInterval = setInterval(() => {
-        timeLeft--;
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
+    questionTimer = setInterval(() => {
+        // In normal mode, time out ends the game. In challenge, it just moves to the next question.
+        if (gameMode === 'normal') {
+            clearInterval(questionTimer);
             showResult(false, `انتهى الوقت! اللاعب هو: ${currentQuestion.name}`);
             setTimeout(() => { resultOverlayEl.style.display = 'none'; endGame(); }, 2500);
+        } else {
+            clearInterval(questionTimer);
+            showResult(false, `انتهى الوقت!`);
+            setTimeout(() => { resultOverlayEl.style.display = 'none'; loadQuestion(); }, 2000);
         }
-    }, 1000);
+    }, QUESTION_TIME * 1000);
 }
 
 function loadQuestion() {
@@ -91,15 +161,18 @@ function loadQuestion() {
     do { playerIndex = Math.floor(Math.random() * db.length); } while (usedPlayerIndices.includes(playerIndex));
     usedPlayerIndices.push(playerIndex);
     currentQuestion = db[playerIndex];
+    
     resetQuestionUI();
     displayInfo();
     createChoices();
-    startTimer();
+    startQuestionTimer();
 }
 
 function resetQuestionUI() {
-    currentInfoIndex = 0; potentialPoints = 30;
-    infoBoxEl.innerHTML = ''; choicesEl.innerHTML = '';
+    currentInfoIndex = 0;
+    potentialPoints = 30;
+    infoBoxEl.innerHTML = '';
+    choicesEl.innerHTML = '';
     nextInfoBtn.disabled = false;
     updateUI();
 }
@@ -122,21 +195,33 @@ function createChoices() {
 }
 
 function checkAnswer(selectedChoice) {
-    clearInterval(timerInterval);
+    clearInterval(questionTimer);
     let isCorrect = selectedChoice === currentQuestion.name;
+    
     if (isCorrect) {
-        let bonusPoints = streak * 10;
         let earnedCoins = Math.floor(potentialPoints / 10);
-        score += potentialPoints + bonusPoints;
+        if (gameMode === 'normal') {
+            score += potentialPoints;
+        } else {
+            score++; // In challenge mode, score is number of correct answers
+        }
         coins += earnedCoins;
         streak++;
-        let resultMsg = `إجابة صحيحة! +${potentialPoints} نقطة | +${earnedCoins} عملة`;
+        let resultMsg = `إجابة صحيحة!`;
+        if (gameMode === 'normal') resultMsg += ` +${potentialPoints} نقطة`;
+        resultMsg += ` | +${earnedCoins} عملة`;
+        
         showResult(true, resultMsg);
-        setTimeout(() => { resultOverlayEl.style.display = 'none'; loadQuestion(); }, 2000);
+        setTimeout(() => { resultOverlayEl.style.display = 'none'; loadQuestion(); }, 1500);
     } else {
         streak = 0;
-        showResult(false, `إجابة خاطئة! اللاعب هو: ${currentQuestion.name}`);
-        setTimeout(() => { resultOverlayEl.style.display = 'none'; endGame(); }, 2500);
+        if (gameMode === 'normal') {
+            showResult(false, `إجابة خاطئة! اللاعب هو: ${currentQuestion.name}`);
+            setTimeout(() => { resultOverlayEl.style.display = 'none'; endGame(); }, 2500);
+        } else {
+            showResult(false, `إجابة خاطئة!`);
+            setTimeout(() => { resultOverlayEl.style.display = 'none'; loadQuestion(); }, 1500);
+        }
     }
 }
 
@@ -147,7 +232,8 @@ function showResult(isCorrect, text) {
 }
 
 function updateUI() {
-    scoreEl.textContent = `النقاط: ${score}`;
+    const scoreLabel = gameMode === 'normal' ? "النقاط" : "الصحيحة";
+    scoreEl.textContent = `${scoreLabel}: ${score}`;
     coinsDisplay.textContent = `💰 ${coins}`;
     potentialPointsEl.textContent = `النقاط: ${potentialPoints}`;
     
@@ -155,15 +241,17 @@ function updateUI() {
         btn.disabled = coins < POWERUP_COSTS[key];
     });
     
-    let currentLevel = levels.filter(l => score >= l.minScore).pop() || levels[0];
-    let nextLevel = levels[levels.indexOf(currentLevel) + 1];
-    playerLevelEl.textContent = currentLevel.name;
-    if (nextLevel) {
-        let scoreInLevel = score - currentLevel.minScore;
-        let levelScoreRange = nextLevel.minScore - currentLevel.minScore;
-        progressBarEl.style.width = `${(scoreInLevel / levelScoreRange) * 100}%`;
-    } else {
-        progressBarEl.style.width = '100%';
+    if (gameMode === 'normal') {
+        let currentLevel = levels.filter(l => score >= l.minScore).pop() || levels[0];
+        let nextLevel = levels[levels.indexOf(currentLevel) + 1];
+        playerLevelEl.textContent = currentLevel.name;
+        if (nextLevel) {
+            let scoreInLevel = score - currentLevel.minScore;
+            let levelScoreRange = nextLevel.minScore - currentLevel.minScore;
+            progressBarEl.style.width = `${(scoreInLevel / levelScoreRange) * 100}%`;
+        } else {
+            progressBarEl.style.width = '100%';
+        }
     }
 }
 
@@ -205,8 +293,9 @@ Object.entries(powerups).forEach(([key, btn]) => {
     });
 });
 
-startBtn.addEventListener('click', startGame);
-restartBtn.addEventListener('click', startGame);
+startNormalBtn.addEventListener('click', () => startGame('normal'));
+startChallengeBtn.addEventListener('click', () => startGame('challenge'));
+restartBtn.addEventListener('click', initGame);
 
 // --- Initial Load ---
 initGame();
