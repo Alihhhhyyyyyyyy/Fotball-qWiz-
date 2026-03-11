@@ -6,75 +6,51 @@
     <title>اعرف اللاعب</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@700&family=Cairo:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="background-texture"></div>
+    <!-- The main game wrapper will now act as the screen container -->
     <div class="game-wrapper">
+        
         <!-- Start Screen -->
         <div class="screen" id="start-screen">
-            <div class="logo-container">
-                <h1 class="game-title">اعرف<span class="title-highlight">اللاعب</span></h1>
-                <div class="title-underline"></div>
-            </div>
-            <div class="menu">
-                <button class="menu-btn" id="play-btn"><span>ابدأ اللعب</span></button>
-                <button class="menu-btn secondary" id="leaderboard-btn"><span>لوحة الصدارة</span></button>
-                <button class="menu-btn secondary" id="settings-btn"><span>الإعدادات</span></button>
-            </div>
-        </div>
-
-        <!-- Game Screen -->
-        <div class="screen hidden" id="game-container">
-            <div class="game-header">
-                <div id="game-mode-display" class="game-mode-display"></div>
-                <div id="main-timer-display" class="main-timer-display"></div>
-            </div>
             <div class="top-bar">
-                <div class="resource-display">
-                    <span id="cash-display">💲 0</span>
-                </div>
-                <div class="resource-display">
-                    <span id="score-display">🏆 0</span>
+                <button class="icon-btn" id="settings-btn">⚙️</button>
+                <div class="resources">
+                    <div class="resource-item" id="score-display">
+                        <span>🏆</span>
+                        <div class="resource-value">0</div>
+                    </div>
+                    <div class="resource-item" id="cash-display">
+                        <span>💲</span>
+                        <div class="resource-value">100</div>
+                        <button class="add-btn">+</button>
+                    </div>
                 </div>
             </div>
-            <div class="player-level" id="player-level"></div>
-            <div class="progress-bar-container"><div class="progress-bar" id="progress-bar"></div></div>
-            <div class="timer-container"><div class="timer-bar" id="timer-bar"></div></div>
-            <div class="powerups-container">
-                <button class="powerup-btn" id="powerup-5050" data-cost="15" title="حذف إجابة (15 من النقود)">50/50</button>
-                <button class="powerup-btn" id="powerup-nation" data-cost="20" title="كشف الجنسية (20 من النقود)">🌍</button>
-                <button class="powerup-btn" id="powerup-club" data-cost="25" title="كشف النادي (25 من النقود)">👕</button>
-                <button class="powerup-btn" id="powerup-hint" data-cost="30" title="تلميح الحرف (30 من النقود)">A..?</button>
+
+            <div class="main-content">
+                <div class="logo-container">
+                    <!-- ضع رابط صورة الشعار هنا -->
+                    <img src="https://i.ibb.co/p3Z5yG3/logo-placeholder.png" alt="Game Logo" class="game-logo">
+                </div>
+                <button class="play-btn" id="play-btn">
+                    <span>▶</span> Play
+                </button>
             </div>
-            <div class="info-box" id="info-box"></div>
-            <button id="next-info-btn" class="action-btn">معلومة إضافية</button>
-            <div class="choices" id="choices"></div>
         </div>
 
-        <!-- End Screen -->
-        <div class="screen hidden" id="end-screen">
-            <div class="logo-container">
-                 <h1 class="game-title" style="font-size: 2.5em;">انتهت<span class="title-highlight">اللعبة</span></h1>
-                 <div class="title-underline" style="width: 60px;"></div>
-            </div>
-            <div class="final-score-container">
-                <p id="final-score-label">نتيجتك النهائية:</p>
-                <div class="final-score" id="final-score">0</div>
-                <div class="stats-container">
-                    <p class="stats">أطول سلسلة صحيحة: <span id="best-streak-display">0</span></p>
-                    <p class="stats">المساعدات المستخدمة: <span id="powerups-used-display">0</span></p>
-                </div>
-                <p class="highscore-label">أعلى نتيجة (عادي): <span id="high-score-end-display">0</span></p>
-                <p class="highscore-label">أعلى نتيجة (تحدي): <span id="challenge-high-score-end-display">0</span></p>
-            </div>
-            <div class="menu">
-                <button class="menu-btn" id="restart-btn"><span>العب مرة أخرى</span></button>
-                <button class="menu-btn secondary" id="share-btn"><span>🏆 مشاركة النتيجة</span></button>
-                <button class="menu-btn secondary" id="back-to-menu-btn"><span>القائمة الرئيسية</span></button>
-            </div>
+        <!-- Game Screen (سيتم تصميمه لاحقًا ليتناسب مع الهوية الجديدة) -->
+        <div class="screen hidden" id="game-container">
+            <!-- المحتوى القديم لشاشة اللعب هنا -->
         </div>
+
+        <!-- End Screen (سيتم تصميمه لاحقًا ليتناسب مع الهوية الجديدة) -->
+        <div class="screen hidden" id="end-screen">
+            <!-- المحتوى القديم لشاشة النهاية هنا -->
+        </div>
+
     </div>
 
     <div class="result-overlay" id="result-overlay"><div class="result-text" id="result-text"></div></div>
