@@ -29,7 +29,8 @@ body {
     background-size: cover;
     background-position: center;
     /* الخلفية الاحترافية التي تليق بالشعار */
-    background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url('https://i.imgur.com/gKwgJ6h.jpeg');
+    background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url('https://i.postimg.cc/sX8Tj7m6/
+file-000000004fcc7246b73a2ec06a458058.png');
     display: flex;
     flex-direction: column;
     max-width: 420px; /* For better viewing on desktop */
