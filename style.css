@@ -152,7 +152,7 @@ body {
     color: white;
 }
 
-/* شاشة اللعب (التحدي) */
+/* شاشة اللعب */
 .game-header {
     padding: 15px;
     background: rgba(0,0,0,0.2);
@@ -211,8 +211,7 @@ body {
     position: relative;
 }
 
-/* الصورة العادية - في كل الشاشات */
-.player-image {
+#player-image {
     width: 200px;
     height: 200px;
     border-radius: 50%;
@@ -225,13 +224,11 @@ body {
     transition: filter 0.5s;
 }
 
-/* الوضع الاعمي (blur) - فقط في شاشة التحدي */
-.player-image.blurred {
+#player-image.blurred {
     filter: blur(10px);
 }
 
-/* بعد الإجابة - الصورة بتوضح */
-.player-image.revealed {
+#player-image.revealed {
     filter: blur(0);
 }
 
@@ -640,7 +637,7 @@ input:checked + .slider:before {
         grid-template-columns: repeat(4, 1fr);
     }
     
-    .player-image {
+    #player-image {
         width: 150px;
         height: 150px;
     }
