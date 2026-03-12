@@ -6,14 +6,13 @@
     <title>اعرف اللاعب</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@700&family=Cairo:wght@700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@700;900&display=swap" rel="stylesheet">
 </head>
 <body>
 
     <div class="game-wrapper">
 
-        <!-- شاشة البداية (ظاهرة عند التحميل) -->
+        <!-- شاشة البداية -->
         <div class="screen" id="start-screen">
             <div class="top-bar">
                 <button class="icon-btn" id="settings-btn">⚙️</button>
@@ -31,7 +30,7 @@
 
             <div class="main-content">
                 <div class="logo-container">
-                    <img src="https://i.postimg.cc/VsrCnjGz/file-00000000d7947246be06a59587c132f3.png" alt="Game Logo" class="game-logo">
+                    <img src="https://i.postimg.cc/bJs4zzxS/1000060703.png" alt="Game Logo" class="game-logo">
                 </div>
                 <button class="play-btn" id="play-btn">
                     <span>▶</span> ابدأ اللعب
@@ -39,7 +38,7 @@
             </div>
         </div>
 
-        <!-- شاشة اللعب (مخفية) -->
+        <!-- شاشة اللعب (كما هي) -->
         <div class="screen hidden" id="game-container">
             <div class="top-bar">
                 <button class="icon-btn" id="back-to-menu-btn-game">☰</button>
@@ -64,12 +63,11 @@
                         <button class="powerup-btn" id="powerup-club" data-cost="25">👕</button>
                         <button class="powerup-btn" id="powerup-hint" data-cost="30">💡</button>
                     </div>
-                    <button id="next-info-btn">معلومة إضافية (<span id="potential-points">30</span>)</button>
                 </div>
             </div>
         </div>
 
-        <!-- شاشة النهاية (مخفية) -->
+        <!-- شاشة النهاية (كما هي) -->
         <div class="screen hidden" id="end-screen">
              <div class="top-bar">
                 <div class="resources">
@@ -98,21 +96,32 @@
 
     </div>
 
-    <!-- Overlays & Modals (مخفية) -->
+    <!-- Overlays & Modals -->
     <div class="result-overlay" id="result-overlay"><div class="result-text" id="result-text"></div></div>
+    
+    <!-- تم إعادة بناء قائمة الإعدادات بالكامل هنا -->
     <div class="modal-overlay hidden" id="settings-modal">
         <div class="modal-content">
-            <button class="close-btn" id="close-settings-btn">&times;</button>
-            <h2>الإعدادات</h2>
-            <div class="setting-item">
-                <label for="sound-toggle">الأصوات</label>
-                <button class="toggle-btn" id="sound-toggle">🔊</button>
+            <div class="modal-header">
+                <h3>الإعدادات</h3>
+                <button class="close-btn" id="close-settings-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="sound-controls">
+                    <button class="modal-icon-btn" id="sound-toggle">🔊</button>
+                    <button class="modal-icon-btn" id="vibration-toggle">📳</button>
+                </div>
+                <button class="modal-btn">اختر اللغة</button>
+                <button class="modal-btn">تواصل معنا</button>
+                <button class="modal-btn">قيّم اللعبة</button>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="privacy-link">سياسة الخصوصية</a>
             </div>
         </div>
     </div>
 
     <div class="timer-container" id="timer-container"><div class="timer-bar" id="timer-bar"></div></div>
     
-    <script src="script.js"></script>
 </body>
 </html>
