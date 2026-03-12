@@ -1,3 +1,9 @@
+// ==================== إعدادات اللعبة الأساسية ====================
+const XP_PER_CORRECT_ANSWER = 10;
+const POWERUP_COSTS = { '5050': 15, 'nation': 20, 'club': 25, 'hint': 30, 'swap': 35, 'blind': 40 };
+const INITIAL_CASH = 100;
+const CHALLENGE_MODE_DURATION = 60;
+
 // ==================== بيانات اللاعبين ====================
 let players = [];
 
@@ -12,6 +18,7 @@ let usedPlayerIndices = [];
 let totalXp = 0;
 let powerupsUsedCount = 0;
 let questionTimer;
+let challengeTimer;
 let timeLeft = 20;
 
 // ==================== متغيرات الأوضاع الخاصة ====================
@@ -23,7 +30,7 @@ let bossMode = {
         { name: "المرحلة 1: أساطير الستينات", players: ["بيليه", "أوزيبيو", "يوهان كرويف"] },
         { name: "المرحلة 2: أساطير الثمانينات", players: ["مارادونا", "بلاتيني", "رومينيغه"] },
         { name: "المرحلة 3: أساطير التسعينات", players: ["رونالدو", "زيدان", "باجيو"] },
-        { name: "المرحلة 4: الأساطير الحديثة", players: ["ميسي", "رونالدو", "مودريتش"] }
+        { name: "المرحلة 4: الأساطير الحديثة", players: ["ميسي", "كريستيانو رونالدو", "مودريتش"] }
     ]
 };
 
@@ -74,14 +81,12 @@ let achievements = JSON.parse(localStorage.getItem('achievements') || '[]');
 let playerMarket = [
     { name: "بيليه", price: 5000, rating: 99, sold: false },
     { name: "مارادونا", price: 5000, rating: 99, sold: false },
-    { name: "ميسي 2012", price: 4000, rating: 98, sold: false },
-    { name: "رونالدو 2014", price: 4000, rating: 98, sold: false },
-    { name: "زيدان 1998", price: 3500, rating: 97, sold: false },
-    { name: "رونالدو 2002", price: 3500, rating: 97, sold: false },
-    { name: "صلاح 2018", price: 2000, rating: 95, sold: false },
-    { name: "مبابي 2022", price: 2500, rating: 96, sold: false },
-    { name: "هالاند 2023", price: 2200, rating: 95, sold: false },
-    { name: "نيمار 2015", price: 1800, rating: 94, sold: false }
+    { name: "ميسي", price: 4000, rating: 98, sold: false },
+    { name: "كريستيانو رونالدو", price: 4000, rating: 98, sold: false },
+    { name: "زيدان", price: 3500, rating: 97, sold: false },
+    { name: "رونالدو", price: 3500, rating: 97, sold: false },
+    { name: "محمد صلاح", price: 2000, rating: 95, sold: false },
+    { name: "مبابي", price: 2500, rating: 96, sold: false }
 ];
 
 let myCollection = JSON.parse(localStorage.getItem('myCollection') || '[]');
@@ -93,6 +98,64 @@ let hallOfFame = JSON.parse(localStorage.getItem('hallOfFame') || '[]');
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 let isSoundMuted = false;
 let isVibrationMuted = false;
+
+// ==================== دوال الصوت والاهتزاز ====================
+function playSound(type) {
+    if (!audioCtx || isSoundMuted) return;
+    try {
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        switch (type) {
+            case 'correct':
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
+                break;
+            case 'wrong':
+                oscillator.type = 'square';
+                oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
+                break;
+            case 'click':
+                oscillator.type = 'triangle';
+                oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
+                break;
+            case 'powerup':
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(1200, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.2);
+                break;
+            case 'levelUp':
+                oscillator.type = 'triangle';
+                oscillator.frequency.setValueAtTime(1500, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+                break;
+            case 'fail':
+                oscillator.type = 'triangle';
+                oscillator.frequency.setValueAtTime(150, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
+                break;
+            default:
+                return;
+        }
+
+        oscillator.start(audioCtx.currentTime);
+        oscillator.stop(audioCtx.currentTime + 0.3);
+    } catch (e) {
+        console.log('Sound error:', e);
+    }
+}
+
+function vibrate(duration) {
+    if (isVibrationMuted) return;
+    if (navigator.vibrate) {
+        navigator.vibrate(duration);
+    }
+}
 
 // ==================== عناصر DOM ====================
 const startScreen = document.getElementById('start-screen');
@@ -170,69 +233,19 @@ const clubStandings = document.getElementById('club-standings');
 const achievementUnlock = document.getElementById('achievement-unlock');
 const achievementName = document.getElementById('achievement-name');
 
-// ==================== دوال الصوت والاهتزاز ====================
-function playSound(type) {
-    if (!audioCtx || isSoundMuted) return;
-    try {
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-
-        switch (type) {
-            case 'correct':
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
-                break;
-            case 'wrong':
-                oscillator.type = 'square';
-                oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
-                break;
-            case 'click':
-                oscillator.type = 'triangle';
-                oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
-                break;
-            case 'powerup':
-                oscillator.type = 'sawtooth';
-                oscillator.frequency.setValueAtTime(1200, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.2);
-                break;
-            case 'levelUp':
-                oscillator.type = 'triangle';
-                oscillator.frequency.setValueAtTime(1500, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
-                break;
-            case 'achievement':
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
-                break;
-            default:
-                return;
-        }
-
-        oscillator.start(audioCtx.currentTime);
-        oscillator.stop(audioCtx.currentTime + 0.3);
-    } catch (e) {
-        console.log('Sound error:', e);
-    }
-}
-
-function vibrate(duration) {
-    if (isVibrationMuted) return;
-    if (navigator.vibrate) {
-        navigator.vibrate(duration);
-    }
-}
-
 // ==================== دوال التحميل ====================
 function showLoading(show) {
     if (loadingSpinner) {
         loadingSpinner.classList.toggle('hidden', !show);
     }
+}
+
+function getBackupPlayers() {
+    return [
+        { name: "ليونيل ميسي", infos: ["فزت بالكرة الذهبية 8 مرات", "فزت بكأس العالم 2022"], nationality: "الأرجنتين", mainClub: "برشلونة", difficulty: "medium", rating: 99 },
+        { name: "كريستيانو رونالدو", infos: ["فزت بدوري أبطال أوروبا 5 مرات", "هداف التاريخ"], nationality: "البرتغال", mainClub: "ريال مدريد", difficulty: "medium", rating: 99 },
+        { name: "محمد صلاح", infos: ["فزت بالحذاء الذهبي 3 مرات", "فزت بدوري أبطال أوروبا"], nationality: "مصر", mainClub: "ليفربول", difficulty: "easy", rating: 95 }
+    ];
 }
 
 async function loadPlayersData() {
@@ -249,30 +262,6 @@ async function loadPlayersData() {
         showLoading(false);
         initGame();
     }
-}
-
-function getBackupPlayers() {
-    return [
-        { name: "ليونيل ميسي", infos: ["فزت بالكرة الذهبية 8 مرات"], nationality: "الأرجنتين", mainClub: "برشلونة", difficulty: "medium", rating: 99 },
-        { name: "كريستيانو رونالدو", infos: ["فزت بدوري أبطال أوروبا 5 مرات"], nationality: "البرتغال", mainClub: "ريال مدريد", difficulty: "medium", rating: 99 },
-        { name: "محمد صلاح", infos: ["فزت بالحذاء الذهبي 3 مرات"], nationality: "مصر", mainClub: "ليفربول", difficulty: "easy", rating: 95 }
-    ];
-}
-
-// ==================== دالة تغيير الصعوبة ====================
-function setDifficulty(level) {
-    currentDifficulty = level;
-    difficultyLevel = DIFFICULTY[level];
-    
-    document.querySelectorAll('.difficulty-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.difficulty === level) {
-            btn.classList.add('active');
-        }
-    });
-    
-    localStorage.setItem('preferredDifficulty', level);
-    playSound('click');
 }
 
 // ==================== دوال المستويات ====================
@@ -312,18 +301,6 @@ function checkAchievements() {
         newAchievement = '⚡ 10 إجابات متتالية +500 كاش';
     }
     
-    if (!achievements.includes('cash1000') && cash >= 1000) {
-        achievements.push('cash1000');
-        cash += 200;
-        newAchievement = '💰 مليونير +200 كاش';
-    }
-    
-    if (!achievements.includes('xp5000') && totalXp >= 5000) {
-        achievements.push('xp5000');
-        cash += 1000;
-        newAchievement = '👑 أسطورة حقيقية +1000 كاش';
-    }
-    
     if (newAchievement) {
         playSound('achievement');
         showAchievement(newAchievement);
@@ -332,12 +309,83 @@ function checkAchievements() {
 }
 
 function showAchievement(text) {
-    achievementName.textContent = text;
-    achievementUnlock.classList.remove('hidden');
-    setTimeout(() => achievementUnlock.classList.add('hidden'), 3000);
+    if (achievementUnlock && achievementName) {
+        achievementName.textContent = text;
+        achievementUnlock.classList.remove('hidden');
+        setTimeout(() => achievementUnlock.classList.add('hidden'), 3000);
+    }
+}
+
+// ==================== دوال الصعوبة ====================
+function setDifficulty(level) {
+    currentDifficulty = level;
+    difficultyLevel = DIFFICULTY[level];
+    
+    document.querySelectorAll('.difficulty-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.difficulty === level) {
+            btn.classList.add('active');
+        }
+    });
+    
+    localStorage.setItem('preferredDifficulty', level);
+    playSound('click');
+}
+
+// ==================== دوال تحديث ترتيب الأندية ====================
+function updateClubStandings(player) {
+    if (player && player.mainClub && clubs[player.mainClub]) {
+        clubs[player.mainClub].points += 10;
+        clubs[player.mainClub].fans++;
+    }
+    
+    let sorted = Object.entries(clubs).sort((a, b) => b[1].points - a[1].points);
+    let html = '<h4>🏆 ترتيب الأندية</h4>';
+    sorted.slice(0, 5).forEach(([club, data]) => {
+        html += `<div style="color: ${data.color}; margin: 3px 0;">
+            ${club}: ${data.points} نقطة (${data.fans} لاعب)
+        </div>`;
+    });
+    
+    if (clubStandings) {
+        clubStandings.innerHTML = html;
+        clubStandings.classList.remove('hidden');
+    }
+}
+
+// ==================== دوال الهدية اليومية ====================
+function checkDailyGift() {
+    if (!claimGiftBtn) return;
+    
+    let lastGift = localStorage.getItem('lastGiftDate');
+    let today = new Date().toDateString();
+    
+    if (lastGift !== today) {
+        claimGiftBtn.disabled = false;
+        claimGiftBtn.textContent = '🎁 هدية اليوم متاحة!';
+    } else {
+        claimGiftBtn.disabled = true;
+        claimGiftBtn.textContent = '🎁 عد غداً للهدية';
+    }
 }
 
 // ==================== دوال قاعة المشاهير ====================
+function displayHallOfFame() {
+    let html = '<h3>🏆 أفضل 10 لاعبين</h3>';
+    if (hallOfFame.length === 0) {
+        html += '<p>لا يوجد لاعبين بعد</p>';
+    } else {
+        hallOfFame.forEach((entry, index) => {
+            let medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '📋';
+            html += `<div style="padding: 8px; margin: 5px 0; background: rgba(255,255,255,0.1); border-radius: 8px;">
+                ${medal} ${entry.name} - ${entry.score} نقطة (${entry.level})
+            </div>`;
+        });
+    }
+    let content = document.getElementById('hall-of-fame-content');
+    if (content) content.innerHTML = html;
+}
+
 function addToHallOfFame() {
     let playerName = prompt("ادخل اسمك لدخول قاعة المشاهير:");
     if (!playerName) playerName = "لاعب";
@@ -356,18 +404,7 @@ function addToHallOfFame() {
     displayHallOfFame();
 }
 
-function displayHallOfFame() {
-    let html = '<h3>🏆 أفضل 10 لاعبين</h3>';
-    hallOfFame.forEach((entry, index) => {
-        let medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '📋';
-        html += `<div style="padding: 8px; margin: 5px 0; background: rgba(255,255,255,0.1); border-radius: 8px;">
-            ${medal} ${entry.name} - ${entry.score} نقطة (${entry.level})
-        </div>`;
-    });
-    document.getElementById('hall-of-fame-content').innerHTML = html;
-}
-
-// ==================== دوال مجموعتي وسوق الانتقالات ====================
+// ==================== دوال مجموعتي ====================
 function displayCollection() {
     let html = '<h3>📚 مجموعتي</h3>';
     if (myCollection.length === 0) {
@@ -379,110 +416,9 @@ function displayCollection() {
             </div>`;
         });
     }
-    document.getElementById('collection-content').innerHTML = html;
+    let content = document.getElementById('collection-content');
+    if (content) content.innerHTML = html;
 }
-
-function openMarket() {
-    let marketHtml = '<h3>🏪 سوق الانتقالات</h3>';
-    playerMarket.forEach((player, index) => {
-        if (!player.sold) {
-            marketHtml += `<div style="padding: 10px; margin: 5px 0; background: rgba(255,255,255,0.1); border-radius: 8px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span>⭐ ${player.name} (تقييم: ${player.rating})</span>
-                    <span>💰 ${player.price}</span>
-                    <button onclick="buyPlayer(${index})" class="market-buy-btn" style="background: gold; color: black; border: none; padding: 5px 10px; border-radius: 5px;">شراء</button>
-                </div>
-            </div>`;
-        }
-    });
-    
-    let marketDiv = document.createElement('div');
-    marketDiv.className = 'modal-content';
-    marketDiv.innerHTML = marketHtml;
-    marketDiv.querySelectorAll('.market-buy-btn').forEach(btn => btn.onclick = btn.onclick);
-    
-    let marketModal = document.createElement('div');
-    marketModal.className = 'modal-overlay';
-    marketModal.id = 'market-modal';
-    marketModal.appendChild(marketDiv);
-    document.body.appendChild(marketModal);
-}
-
-window.buyPlayer = function(index) {
-    let player = playerMarket[index];
-    if (cash >= player.price && !player.sold) {
-        cash -= player.price;
-        player.sold = true;
-        myCollection.push({ name: player.name, rating: player.rating, price: player.price });
-        localStorage.setItem('myCollection', JSON.stringify(myCollection));
-        alert(`✅ اشتريت ${player.name} بنجاح!`);
-        updateUI();
-        displayCollection();
-        document.getElementById('market-modal').remove();
-    } else if (player.sold) {
-        alert('❌ هذا اللاعب تم بيعه بالفعل');
-    } else {
-        alert('💰 الكاش غير كافي');
-    }
-};
-
-// ==================== دوال تحديث ترتيب الأندية ====================
-function updateClubStandings(player) {
-    if (player && player.mainClub && clubs[player.mainClub]) {
-        clubs[player.mainClub].points += 10;
-        clubs[player.mainClub].fans++;
-    }
-    
-    let sorted = Object.entries(clubs).sort((a, b) => b[1].points - a[1].points);
-    let html = '<h4>🏆 ترتيب الأندية</h4>';
-    sorted.slice(0, 5).forEach(([club, data]) => {
-        html += `<div style="color: ${data.color}; margin: 3px 0;">
-            ${club}: ${data.points} نقطة (${data.fans} لاعب)
-        </div>`;
-    });
-    
-    clubStandings.innerHTML = html;
-    clubStandings.classList.remove('hidden');
-}
-
-// ==================== دوال الهدية اليومية ====================
-function checkDailyGift() {
-    let lastGift = localStorage.getItem('lastGiftDate');
-    let today = new Date().toDateString();
-    
-    if (lastGift !== today) {
-        claimGiftBtn.disabled = false;
-        claimGiftBtn.textContent = '🎁 هدية اليوم متاحة!';
-    } else {
-        claimGiftBtn.disabled = true;
-        claimGiftBtn.textContent = '🎁 عد غداً للهدية';
-    }
-}
-
-claimGiftBtn.addEventListener('click', function() {
-    let gifts = [
-        { type: 'cash', amount: 50 },
-        { type: 'cash', amount: 100 },
-        { type: 'cash', amount: 150 },
-        { type: 'xp', amount: 100 },
-        { type: 'xp', amount: 200 }
-    ];
-    
-    let gift = gifts[Math.floor(Math.random() * gifts.length)];
-    
-    if (gift.type === 'cash') {
-        cash += gift.amount;
-        alert(`🎁 هدية اليوم: ${gift.amount} كاش!`);
-    } else {
-        totalXp += gift.amount;
-        alert(`🎁 هدية اليوم: ${gift.amount} XP!`);
-    }
-    
-    localStorage.setItem('lastGiftDate', new Date().toDateString());
-    updateUI();
-    saveGame();
-    checkDailyGift();
-});
 
 // ==================== دوال الثيمات ====================
 function applyTheme(theme) {
@@ -501,21 +437,7 @@ function applyTheme(theme) {
     localStorage.setItem('preferredTheme', theme);
 }
 
-// ==================== دوال مشاركة النتيجة ====================
-shareBtn.addEventListener('click', function() {
-    let text = `🎮 لعبة اعرف اللاعب\n🏆 نتيجتي: ${score}\n💰 الكاش: ${cash}\n🔥 أطول سلسلة: ${bestStreak}\n⭐ المستوى: ${getCurrentLevel(totalXp).name}`;
-    
-    if (navigator.share) {
-        navigator.share({
-            title: 'نتيجتي في لعبة اعرف اللاعب',
-            text: text
-        });
-    } else {
-        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
-    }
-});
-
-// ==================== دوال بدء اللعبة الأساسية ====================
+// ==================== دوال بدء اللعبة ====================
 function initGame() {
     loadGame();
     startScreen.classList.remove('hidden');
@@ -537,6 +459,7 @@ function startGame() {
     streak = 0;
     usedPlayerIndices = [];
     powerupsUsedCount = 0;
+    currentInfoIndex = 0;
     
     if (gameMode === 'challenge') {
         cash = 50;
@@ -550,11 +473,11 @@ function startGame() {
         cash = 100;
         blindMode.active = true;
         blindMode.hints = 3;
-        playerImageContainer.style.display = 'block';
-        infoBox.style.display = 'none';
+        if (playerImageContainer) playerImageContainer.style.display = 'block';
+        if (infoBox) infoBox.style.display = 'none';
         alert('🕶️ الوضع الأعمى: خمن اللاعب من الصورة فقط! لديك 3 تلميحات');
     } else {
-        cash = 100;
+        cash = INITIAL_CASH;
     }
     
     startScreen.classList.add('hidden');
@@ -600,17 +523,19 @@ function loadQuestion() {
 
     currentInfoIndex = 0;
     
-    if (blindMode.active) {
-        playerImage.src = currentPlayer.image || 'default.jpg';
+    if (blindMode.active && playerImageContainer && infoBox) {
+        playerImage.src = currentPlayer.image || 'https://via.placeholder.com/120';
         playerImageContainer.style.display = 'block';
         infoBox.style.display = 'none';
     } else {
-        playerImageContainer.style.display = 'none';
-        infoBox.style.display = 'block';
-        infoBox.innerHTML = '';
-        for (let i = 0; i < difficultyLevel.infoCount; i++) {
-            if (i < currentPlayer.infos.length) {
-                displayInfo(currentPlayer.infos[i]);
+        if (playerImageContainer) playerImageContainer.style.display = 'none';
+        if (infoBox) {
+            infoBox.style.display = 'block';
+            infoBox.innerHTML = '';
+            for (let i = 0; i < difficultyLevel.infoCount; i++) {
+                if (i < currentPlayer.infos.length) {
+                    displayInfo(currentPlayer.infos[i]);
+                }
             }
         }
     }
@@ -623,12 +548,15 @@ function loadQuestion() {
 }
 
 function displayInfo(infoText) {
+    if (!infoBox) return;
     const info = document.createElement('p');
     info.textContent = `• ${infoText}`;
     infoBox.appendChild(info);
 }
 
 function createChoices() {
+    if (!choicesEl) return;
+    
     let choices = [currentPlayer.name];
     let otherPlayers = players.filter(p => p.name !== currentPlayer.name);
     
@@ -642,21 +570,18 @@ function createChoices() {
 
     choices.sort(() => Math.random() - 0.5);
 
-    if (choicesEl) {
-        choicesEl.innerHTML = '';
-        choices.forEach(choice => {
-            const button = document.createElement('button');
-            button.className = 'choice-btn';
-            button.textContent = choice;
-            button.onclick = () => checkAnswer(choice);
-            choicesEl.appendChild(button);
-        });
-    }
+    choicesEl.innerHTML = '';
+    choices.forEach(choice => {
+        const button = document.createElement('button');
+        button.className = 'choice-btn';
+        button.textContent = choice;
+        button.onclick = () => checkAnswer(choice);
+        choicesEl.appendChild(button);
+    });
 }
 
 function checkAnswer(selectedAnswer) {
     clearTimeout(questionTimer);
-    let timeSpent = difficultyLevel.time - timeLeft;
     
     if (selectedAnswer === currentPlayer.name) {
         playSound('correct');
@@ -677,15 +602,22 @@ function checkAnswer(selectedAnswer) {
         totalXp += XP_PER_CORRECT_ANSWER * difficultyLevel.pointsMultiplier;
         updatePlayerLevel();
         
-        // تحديث ترتيب الأندية
         updateClubStandings(currentPlayer);
         
-        resultText.textContent = `✅ صحيح! +${pointsEarned} نقطة`;
-        resultText.style.color = difficultyLevel.color || '#28a745';
+        if (resultText) {
+            resultText.textContent = `✅ صحيح! +${pointsEarned} نقطة`;
+            resultText.style.color = '#28a745';
+        }
         
         if (bossMode.active && streak >= 3) {
-            bossMode.stage++;
-            alert(`🎉 انتقلت للمرحلة ${bossMode.stage}`);
+            if (bossMode.stage < bossMode.bosses.length) {
+                bossMode.stage++;
+                alert(`🎉 انتقلت للمرحلة ${bossMode.stage}`);
+            } else {
+                alert('🏆 أكملت معركة النجوم!');
+                endGame();
+                return;
+            }
         }
         
         checkAchievements();
@@ -695,8 +627,10 @@ function checkAnswer(selectedAnswer) {
         streak = 0;
         cash = Math.max(0, cash - difficultyLevel.wrongPenalty);
         
-        resultText.textContent = `❌ خطأ! اللاعب هو ${currentPlayer.name}`;
-        resultText.style.color = '#dc3545';
+        if (resultText) {
+            resultText.textContent = `❌ خطأ! اللاعب هو ${currentPlayer.name}`;
+            resultText.style.color = '#dc3545';
+        }
         
         if (bossMode.active) {
             bossMode.active = false;
@@ -705,8 +639,8 @@ function checkAnswer(selectedAnswer) {
         
         if (blindMode.active) {
             blindMode.active = false;
-            playerImageContainer.style.display = 'none';
-            infoBox.style.display = 'block';
+            if (playerImageContainer) playerImageContainer.style.display = 'none';
+            if (infoBox) infoBox.style.display = 'block';
         }
     }
     
@@ -716,6 +650,7 @@ function checkAnswer(selectedAnswer) {
 }
 
 function showResult() {
+    if (!resultOverlay) return;
     resultOverlay.classList.remove('hidden');
     setTimeout(() => {
         resultOverlay.classList.add('hidden');
@@ -741,16 +676,16 @@ function startQuestionTimer() {
 }
 
 function startChallengeMode() {
-    let challengeTime = 60;
-    challengeTimerContainer.classList.remove('hidden');
+    let challengeTime = CHALLENGE_MODE_DURATION;
+    if (challengeTimerContainer) challengeTimerContainer.classList.remove('hidden');
     
-    let challengeTimer = setInterval(() => {
+    challengeTimer = setInterval(() => {
         challengeTime--;
-        challengeTimerDisplay.textContent = challengeTime;
+        if (challengeTimerDisplay) challengeTimerDisplay.textContent = challengeTime;
         
         if (challengeTime <= 0) {
             clearInterval(challengeTimer);
-            challengeTimerContainer.classList.add('hidden');
+            if (challengeTimerContainer) challengeTimerContainer.classList.add('hidden');
             endGame();
         }
     }, 1000);
@@ -758,21 +693,23 @@ function startChallengeMode() {
 
 function endGame() {
     clearTimeout(questionTimer);
+    clearInterval(challengeTimer);
+    
     gameContainer.classList.add('hidden');
     endScreen.classList.remove('hidden');
     
-    finalScoreDisplay.textContent = score;
-    finalCashDisplay.textContent = cash;
-    finalStreakDisplay.textContent = streak;
-    finalBestStreakDisplay.textContent = bestStreak;
-    finalXpDisplay.textContent = totalXp;
-    finalLevelDisplay.textContent = getCurrentLevel(totalXp).name;
-    finalPowerupsUsedDisplay.textContent = powerupsUsedCount;
+    if (finalScoreDisplay) finalScoreDisplay.textContent = score;
+    if (finalCashDisplay) finalCashDisplay.textContent = cash;
+    if (finalStreakDisplay) finalStreakDisplay.textContent = streak;
+    if (finalBestStreakDisplay) finalBestStreakDisplay.textContent = bestStreak;
+    if (finalXpDisplay) finalXpDisplay.textContent = totalXp;
+    if (finalLevelDisplay) finalLevelDisplay.textContent = getCurrentLevel(totalXp).name;
+    if (finalPowerupsUsedDisplay) finalPowerupsUsedDisplay.textContent = powerupsUsedCount;
     
     let currentHighscore = parseInt(localStorage.getItem('highscore') || '0');
     if (score > currentHighscore) {
         localStorage.setItem('highscore', score);
-        highscoreDisplay.textContent = score;
+        if (highscoreDisplay) highscoreDisplay.textContent = score;
         alert('🏆 رقم قياسي جديد!');
     }
     
@@ -783,8 +720,8 @@ function endGame() {
     if (bossMode.active) bossMode.active = false;
     if (blindMode.active) {
         blindMode.active = false;
-        playerImageContainer.style.display = 'none';
-        infoBox.style.display = 'block';
+        if (playerImageContainer) playerImageContainer.style.display = 'none';
+        if (infoBox) infoBox.style.display = 'block';
     }
     
     saveGame();
@@ -808,7 +745,7 @@ function updateUI() {
         let progress = (xpIntoCurrent / xpNeeded) * 100;
         if (xpProgressBar) xpProgressBar.style.width = `${progress}%`;
         if (xpBarFill) xpBarFill.style.width = `${progress}%`;
-        if (xpProgressText) xpProgressText.textContent = `${xpIntoCurrent}/${xpNeeded} XP`;
+        if (xpProgressText) xpProgressText.textContent = `${Math.floor(xpIntoCurrent)}/${xpNeeded} XP`;
     } else {
         if (xpProgressBar) xpProgressBar.style.width = '100%';
         if (xpBarFill) xpBarFill.style.width = '100%';
@@ -817,14 +754,6 @@ function updateUI() {
     
     let highscore = Math.max(score, parseInt(localStorage.getItem('highscore') || '0'));
     if (highscoreDisplay) highscoreDisplay.textContent = highscore;
-    
-    // تحديث أسعار الـ power-ups
-    document.getElementById('powerup-5050-cost').textContent = '15';
-    document.getElementById('powerup-nation-cost').textContent = '20';
-    document.getElementById('powerup-club-cost').textContent = '25';
-    document.getElementById('powerup-hint-cost').textContent = '30';
-    document.getElementById('powerup-swap-cost').textContent = '35';
-    document.getElementById('powerup-blind-cost').textContent = '40';
 }
 
 // ==================== دوال حفظ وتحميل اللعبة ====================
@@ -842,7 +771,7 @@ function loadGame() {
     totalXp = parseInt(localStorage.getItem('totalXp') || '0');
 }
 
-// ==================== دوال الـ Power-ups ====================
+// ==================== دوال Power-ups ====================
 function activatePowerup(btn, cost, action) {
     if (cash >= cost) {
         cash -= cost;
@@ -864,209 +793,308 @@ function activatePowerup(btn, cost, action) {
     saveGame();
 }
 
-powerup5050.addEventListener('click', () => {
-    activatePowerup(powerup5050, 15, () => {
-        let buttons = Array.from(document.querySelectorAll('.choice-btn'));
-        let wrongAnswers = buttons.filter(b => b.textContent !== currentPlayer.name);
-        let toRemove = Math.min(2, wrongAnswers.length);
-        
-        for (let i = 0; i < toRemove; i++) {
-            if (wrongAnswers[i]) {
-                wrongAnswers[i].style.opacity = '0.3';
-                wrongAnswers[i].disabled = true;
+// ==================== أحداث الأزرار ====================
+if (playBtn) {
+    playBtn.onclick = function() {
+        playSound('click');
+        startGame();
+    };
+}
+
+if (nextInfoBtn) {
+    nextInfoBtn.onclick = function() {
+        if (currentInfoIndex < currentPlayer.infos.length - 1) {
+            currentInfoIndex++;
+            displayInfo(currentPlayer.infos[currentInfoIndex]);
+            if (currentInfoIndex >= currentPlayer.infos.length - 1) {
+                this.disabled = true;
             }
         }
-    });
-});
+    };
+}
 
-powerupNation.addEventListener('click', () => {
-    activatePowerup(powerupNation, 20, () => {
+if (settingsBtn) {
+    settingsBtn.onclick = function() {
+        playSound('click');
+        if (settingsModal) settingsModal.classList.remove('hidden');
+    };
+}
+
+if (leaderboardBtn) {
+    leaderboardBtn.onclick = function() {
+        playSound('click');
+        displayHallOfFame();
+        if (hallOfFameModal) hallOfFameModal.classList.remove('hidden');
+    };
+}
+
+if (closeSettingsBtn) {
+    closeSettingsBtn.onclick = function() {
+        if (settingsModal) settingsModal.classList.add('hidden');
+    };
+}
+
+if (closeLeaderboardBtn) {
+    closeLeaderboardBtn.onclick = function() {
+        if (leaderboardModal) leaderboardModal.classList.add('hidden');
+    };
+}
+
+if (closeHallOfFameBtn) {
+    closeHallOfFameBtn.onclick = function() {
+        if (hallOfFameModal) hallOfFameModal.classList.add('hidden');
+    };
+}
+
+if (closeCollectionBtn) {
+    closeCollectionBtn.onclick = function() {
+        if (collectionModal) collectionModal.classList.add('hidden');
+    };
+}
+
+if (openMarketBtn) {
+    openMarketBtn.onclick = function() {
+        alert('سوق الانتقالات قريباً!');
+    };
+}
+
+if (backToMenuBtnGame) {
+    backToMenuBtnGame.onclick = function() {
+        playSound('click');
+        clearTimeout(questionTimer);
+        gameContainer.classList.add('hidden');
+        startScreen.classList.remove('hidden');
         if (blindMode.active) {
-            alert(`🌍 جنسية اللاعب: ${currentPlayer.nationality}`);
-        } else {
-            displayInfo(`🌍 الجنسية: ${currentPlayer.nationality}`);
+            blindMode.active = false;
+            if (playerImageContainer) playerImageContainer.style.display = 'none';
+            if (infoBox) infoBox.style.display = 'block';
         }
-    });
-});
+        if (bossMode.active) bossMode.active = false;
+    };
+}
 
-powerupClub.addEventListener('click', () => {
-    activatePowerup(powerupClub, 25, () => {
-        if (blindMode.active) {
-            alert(`👕 النادي: ${currentPlayer.mainClub}`);
-        } else {
-            displayInfo(`👕 النادي: ${currentPlayer.mainClub}`);
+if (backToMenuBtnEnd) {
+    backToMenuBtnEnd.onclick = function() {
+        playSound('click');
+        endScreen.classList.add('hidden');
+        startScreen.classList.remove('hidden');
+    };
+}
+
+if (restartBtn) {
+    restartBtn.onclick = function() {
+        playSound('click');
+        startGame();
+    };
+}
+
+if (soundToggle) {
+    soundToggle.onchange = function(e) {
+        isSoundMuted = !e.target.checked;
+    };
+}
+
+if (vibrationToggle) {
+    vibrationToggle.onchange = function(e) {
+        isVibrationMuted = !e.target.checked;
+    };
+}
+
+if (themeSelect) {
+    themeSelect.onchange = function(e) {
+        applyTheme(e.target.value);
+    };
+}
+
+if (resetGameDataBtn) {
+    resetGameDataBtn.onclick = function() {
+        if (confirm('هل أنت متأكد من حذف كل البيانات؟')) {
+            localStorage.clear();
+            alert('✅ تم إعادة تعيين البيانات');
+            location.reload();
         }
-    });
-});
+    };
+}
 
-powerupHint.addEventListener('click', () => {
-    activatePowerup(powerupHint, 30, () => {
-        if (blindMode.active) {
-            alert(`🔤 أول حرف: ${currentPlayer.name[0]}`);
-        } else {
-            displayInfo(`🔤 أول حرف: ${currentPlayer.name[0]}`);
+if (normalModeBtn) {
+    normalModeBtn.onclick = function() {
+        gameMode = 'normal';
+        normalModeBtn.classList.add('active');
+        if (challengeModeBtn) challengeModeBtn.classList.remove('active');
+        if (bossModeBtn) bossModeBtn.classList.remove('active');
+        if (blindModeBtn) blindModeBtn.classList.remove('active');
+        playSound('click');
+        console.log('✅ وضع عادي');
+    };
+}
+
+if (challengeModeBtn) {
+    challengeModeBtn.onclick = function() {
+        gameMode = 'challenge';
+        challengeModeBtn.classList.add('active');
+        if (normalModeBtn) normalModeBtn.classList.remove('active');
+        if (bossModeBtn) bossModeBtn.classList.remove('active');
+        if (blindModeBtn) blindModeBtn.classList.remove('active');
+        playSound('click');
+        console.log('⚡ وضع تحدي');
+    };
+}
+
+if (bossModeBtn) {
+    bossModeBtn.onclick = function() {
+        gameMode = 'boss';
+        bossModeBtn.classList.add('active');
+        if (normalModeBtn) normalModeBtn.classList.remove('active');
+        if (challengeModeBtn) challengeModeBtn.classList.remove('active');
+        if (blindModeBtn) blindModeBtn.classList.remove('active');
+        playSound('click');
+        console.log('🔥 وضع معركة النجوم');
+    };
+}
+
+if (blindModeBtn) {
+    blindModeBtn.onclick = function() {
+        gameMode = 'blind';
+        blindModeBtn.classList.add('active');
+        if (normalModeBtn) normalModeBtn.classList.remove('active');
+        if (challengeModeBtn) challengeModeBtn.classList.remove('active');
+        if (bossModeBtn) bossModeBtn.classList.remove('active');
+        playSound('click');
+        console.log('🕶️ وضع أعمى');
+    };
+}
+
+if (claimGiftBtn) {
+    claimGiftBtn.onclick = function() {
+        playSound('click');
+        
+        let lastGift = localStorage.getItem('lastGiftDate');
+        let today = new Date().toDateString();
+        
+        if (lastGift === today) {
+            alert('❌ لقد أخذت هديتك اليوم! عد غداً');
+            return;
         }
-    });
-});
-
-powerupSwap.addEventListener('click', () => {
-    activatePowerup(powerupSwap, 35, () => {
-        usedPlayerIndices.push(players.indexOf(currentPlayer));
-        loadQuestion();
-        if (blindMode.active) {
-            alert(`🔄 تم تبديل اللاعب!`);
-        } else {
-            displayInfo(`🔄 تم تبديل اللاعب!`);
-        }
-    });
-});
-
-powerupBlindHint.addEventListener('click', () => {
-    if (!blindMode.active) {
-        alert('هذا الـ power-up يعمل فقط في الوضع الأعمى');
-        return;
-    }
-    
-    activatePowerup(powerupBlindHint, 40, () => {
-        let hints = [
-            `الجنسية: ${currentPlayer.nationality}`,
-            `النادي: ${currentPlayer.mainClub}`,
-            `أول حرف: ${currentPlayer.name[0]}`,
-            `عدد الحروف: ${currentPlayer.name.length}`,
-            `التقييم: ${currentPlayer.rating || '?'}`
+        
+        let gifts = [
+            { type: 'cash', amount: 50, message: '50 كاش' },
+            { type: 'cash', amount: 100, message: '100 كاش' },
+            { type: 'cash', amount: 150, message: '150 كاش' },
+            { type: 'xp', amount: 100, message: '100 XP' },
+            { type: 'xp', amount: 200, message: '200 XP' }
         ];
-        let hint = hints[Math.floor(Math.random() * hints.length)];
-        alert(`🔍 تلميح: ${hint}`);
-    });
-});
-
-// ==================== أحداث الأزرار ====================
-playBtn.addEventListener('click', () => {
-    playSound('click');
-    startGame();
-});
-
-nextInfoBtn.addEventListener('click', () => {
-    if (currentInfoIndex < currentPlayer.infos.length - 1) {
-        currentInfoIndex++;
-        displayInfo(currentPlayer.infos[currentInfoIndex]);
-        if (currentInfoIndex >= currentPlayer.infos.length - 1) {
-            nextInfoBtn.disabled = true;
+        
+        let gift = gifts[Math.floor(Math.random() * gifts.length)];
+        
+        if (gift.type === 'cash') {
+            cash += gift.amount;
+            alert(`🎁 هدية اليوم: ${gift.message}!`);
+        } else {
+            totalXp += gift.amount;
+            updatePlayerLevel();
+            alert(`🎁 هدية اليوم: ${gift.message}!`);
         }
-    }
-});
+        
+        localStorage.setItem('lastGiftDate', today);
+        this.disabled = true;
+        this.textContent = '🎁 عد غداً';
+        updateUI();
+        saveGame();
+    };
+}
 
-settingsBtn.addEventListener('click', () => {
-    playSound('click');
-    settingsModal.classList.remove('hidden');
-});
+if (powerup5050) {
+    powerup5050.onclick = function() {
+        activatePowerup(this, 15, () => {
+            let buttons = Array.from(document.querySelectorAll('.choice-btn'));
+            let wrongAnswers = buttons.filter(b => b.textContent !== currentPlayer.name);
+            let toRemove = Math.min(2, wrongAnswers.length);
+            
+            for (let i = 0; i < toRemove; i++) {
+                if (wrongAnswers[i]) {
+                    wrongAnswers[i].style.opacity = '0.3';
+                    wrongAnswers[i].disabled = true;
+                }
+            }
+        });
+    };
+}
 
-leaderboardBtn.addEventListener('click', () => {
-    playSound('click');
-    displayHallOfFame();
-    hallOfFameModal.classList.remove('hidden');
-});
+if (powerupNation) {
+    powerupNation.onclick = function() {
+        activatePowerup(this, 20, () => {
+            if (blindMode.active) {
+                alert(`🌍 جنسية اللاعب: ${currentPlayer.nationality}`);
+            } else {
+                displayInfo(`🌍 الجنسية: ${currentPlayer.nationality}`);
+            }
+        });
+    };
+}
 
-openMarketBtn.addEventListener('click', () => {
-    openMarket();
-});
+if (powerupClub) {
+    powerupClub.onclick = function() {
+        activatePowerup(this, 25, () => {
+            if (blindMode.active) {
+                alert(`👕 النادي: ${currentPlayer.mainClub}`);
+            } else {
+                displayInfo(`👕 النادي: ${currentPlayer.mainClub}`);
+            }
+        });
+    };
+}
 
-closeSettingsBtn.addEventListener('click', () => {
-    settingsModal.classList.add('hidden');
-});
+if (powerupHint) {
+    powerupHint.onclick = function() {
+        activatePowerup(this, 30, () => {
+            if (blindMode.active) {
+                alert(`🔤 أول حرف: ${currentPlayer.name[0]}`);
+            } else {
+                displayInfo(`🔤 أول حرف: ${currentPlayer.name[0]}`);
+            }
+        });
+    };
+}
 
-closeLeaderboardBtn.addEventListener('click', () => {
-    leaderboardModal.classList.add('hidden');
-});
+if (powerupSwap) {
+    powerupSwap.onclick = function() {
+        activatePowerup(this, 35, () => {
+            usedPlayerIndices.push(players.indexOf(currentPlayer));
+            loadQuestion();
+            if (blindMode.active) {
+                alert(`🔄 تم تبديل اللاعب!`);
+            } else {
+                displayInfo(`🔄 تم تبديل اللاعب!`);
+            }
+        });
+    };
+}
 
-closeHallOfFameBtn.addEventListener('click', () => {
-    hallOfFameModal.classList.add('hidden');
-});
-
-closeCollectionBtn.addEventListener('click', () => {
-    collectionModal.classList.add('hidden');
-});
-
-backToMenuBtnGame.addEventListener('click', () => {
-    playSound('click');
-    clearTimeout(questionTimer);
-    gameContainer.classList.add('hidden');
-    startScreen.classList.remove('hidden');
-    if (blindMode.active) {
-        blindMode.active = false;
-        playerImageContainer.style.display = 'none';
-        infoBox.style.display = 'block';
-    }
-    if (bossMode.active) bossMode.active = false;
-});
-
-backToMenuBtnEnd.addEventListener('click', () => {
-    playSound('click');
-    endScreen.classList.add('hidden');
-    startScreen.classList.remove('hidden');
-});
-
-restartBtn.addEventListener('click', () => {
-    playSound('click');
-    startGame();
-});
-
-soundToggle.addEventListener('change', (e) => {
-    isSoundMuted = !e.target.checked;
-});
-
-vibrationToggle.addEventListener('change', (e) => {
-    isVibrationMuted = !e.target.checked;
-});
-
-themeSelect.addEventListener('change', (e) => {
-    applyTheme(e.target.value);
-});
-
-resetGameDataBtn.addEventListener('click', () => {
-    if (confirm('هل أنت متأكد من حذف كل البيانات؟')) {
-        localStorage.clear();
-        alert('✅ تم إعادة تعيين البيانات');
-        location.reload();
-    }
-});
-
-normalModeBtn.addEventListener('click', () => {
-    gameMode = 'normal';
-    normalModeBtn.classList.add('active');
-    challengeModeBtn.classList.remove('active');
-    bossModeBtn.classList.remove('active');
-    blindModeBtn.classList.remove('active');
-});
-
-challengeModeBtn.addEventListener('click', () => {
-    gameMode = 'challenge';
-    challengeModeBtn.classList.add('active');
-    normalModeBtn.classList.remove('active');
-    bossModeBtn.classList.remove('active');
-    blindModeBtn.classList.remove('active');
-});
-
-bossModeBtn.addEventListener('click', () => {
-    gameMode = 'boss';
-    bossModeBtn.classList.add('active');
-    normalModeBtn.classList.remove('active');
-    challengeModeBtn.classList.remove('active');
-    blindModeBtn.classList.remove('active');
-});
-
-blindModeBtn.addEventListener('click', () => {
-    gameMode = 'blind';
-    blindModeBtn.classList.add('active');
-    normalModeBtn.classList.remove('active');
-    challengeModeBtn.classList.remove('active');
-    bossModeBtn.classList.remove('active');
-});
+if (powerupBlindHint) {
+    powerupBlindHint.onclick = function() {
+        if (!blindMode.active) {
+            alert('هذا الـ power-up يعمل فقط في الوضع الأعمى');
+            return;
+        }
+        
+        activatePowerup(this, 40, () => {
+            let hints = [
+                `الجنسية: ${currentPlayer.nationality}`,
+                `النادي: ${currentPlayer.mainClub}`,
+                `أول حرف: ${currentPlayer.name[0]}`,
+                `عدد الحروف: ${currentPlayer.name.length}`,
+                `التقييم: ${currentPlayer.rating || '?'}`
+            ];
+            let hint = hints[Math.floor(Math.random() * hints.length)];
+            alert(`🔍 تلميح: ${hint}`);
+        });
+    };
+}
 
 document.querySelectorAll('.difficulty-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    btn.onclick = function(e) {
         setDifficulty(e.target.dataset.difficulty);
-    });
+    };
 });
 
 // ==================== إعدادات أولية ====================
@@ -1076,7 +1104,7 @@ if (savedDifficulty) {
 }
 
 const savedTheme = localStorage.getItem('preferredTheme');
-if (savedTheme) {
+if (savedTheme && themeSelect) {
     applyTheme(savedTheme);
     themeSelect.value = savedTheme;
 }
