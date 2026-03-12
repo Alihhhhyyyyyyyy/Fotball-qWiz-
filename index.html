@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>اعرف اللاعب - الأساطير</title>
+    <title>اعرف اللاعب</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -11,7 +11,7 @@
 </head>
 <body>
     <div class="game-wrapper">
-        <!-- شاشة البداية -->
+        <!-- ========== شاشة البداية (بسيطة) ========== -->
         <div id="start-screen" class="screen">
             <div class="header-bar">
                 <button class="icon-btn" id="settings-btn">⚙️</button>
@@ -38,44 +38,13 @@
                     <div class="xp-bar-fill" id="xp-bar-fill" style="width: 0%"></div>
                 </div>
             </div>
-
-            <!-- اختيار الصعوبة -->
-            <div class="difficulty-selector">
-                <h4>مستوى الصعوبة:</h4>
-                <div class="difficulty-buttons">
-                    <button class="difficulty-btn active" data-difficulty="easy">سهل</button>
-                    <button class="difficulty-btn" data-difficulty="medium">متوسط</button>
-                    <button class="difficulty-btn" data-difficulty="hard">صعب</button>
-                    <button class="difficulty-btn" data-difficulty="expert">خبير</button>
-                    <button class="difficulty-btn" data-difficulty="legend">أسطورة</button>
-                </div>
-            </div>
-
-            <!-- اختيار الوضع -->
-            <div class="mode-selector">
-                <button class="mode-btn active" id="normal-mode-btn">🎮 عادي</button>
-                <button class="mode-btn" id="challenge-mode-btn">⚡ تحدي</button>
-                <button class="mode-btn" id="boss-mode-btn">🔥 معركة النجوم</button>
-                <button class="mode-btn" id="blind-mode-btn">🕶️ وضع أعمى</button>
-            </div>
-
-            <div class="xp-progress-container">
-                <div class="xp-progress">
-                    <div id="xp-progress-bar" class="xp-progress-fill" style="width: 0%"></div>
-                </div>
-                <span id="xp-progress-text">0/500 XP</span>
-            </div>
-
-            <!-- الهدية اليومية -->
-            <div id="daily-gift" class="daily-gift">
-                <button class="gift-btn" id="claim-gift-btn">🎁 هدية اليوم</button>
-            </div>
             
             <button class="play-btn" id="play-btn">ابدأ اللعب</button>
         </div>
 
-        <!-- شاشة اللعب -->
+        <!-- ========== شاشة اللعب (فيها كل الخيارات) ========== -->
         <div id="game-container" class="screen hidden">
+            <!-- الهيدر -->
             <div class="game-header">
                 <button class="icon-btn-game" id="back-to-menu-btn-game">☰</button>
                 <div class="game-stats">
@@ -94,7 +63,34 @@
                 </div>
             </div>
 
-            <!-- مؤقت التحدي -->
+            <!-- اختيارات اللعبة (تظهر هنا) -->
+            <div class="game-options">
+                <h3>اختر نمط اللعب:</h3>
+                <div class="mode-selector">
+                    <button class="mode-btn active" id="normal-mode-btn">🎮 عادي</button>
+                    <button class="mode-btn" id="challenge-mode-btn">⚡ تحدي</button>
+                    <button class="mode-btn" id="boss-mode-btn">🔥 معركة النجوم</button>
+                    <button class="mode-btn" id="blind-mode-btn">🕶️ وضع أعمى</button>
+                </div>
+
+                <h3>اختر مستوى الصعوبة:</h3>
+                <div class="difficulty-selector">
+                    <div class="difficulty-buttons">
+                        <button class="difficulty-btn active" data-difficulty="easy">سهل</button>
+                        <button class="difficulty-btn" data-difficulty="medium">متوسط</button>
+                        <button class="difficulty-btn" data-difficulty="hard">صعب</button>
+                        <button class="difficulty-btn" data-difficulty="expert">خبير</button>
+                        <button class="difficulty-btn" data-difficulty="legend">أسطورة</button>
+                    </div>
+                </div>
+
+                <!-- هدية اليوم -->
+                <div class="daily-gift">
+                    <button class="gift-btn" id="claim-gift-btn">🎁 هدية اليوم</button>
+                </div>
+            </div>
+
+            <!-- مؤقت -->
             <div class="timer-bar-container">
                 <div id="timer-bar" class="timer-bar" style="width: 100%"></div>
             </div>
@@ -126,7 +122,7 @@
             <!-- أزرار الإجابة -->
             <div class="choices" id="choices"></div>
 
-            <!-- قائمة الـ Power-ups -->
+            <!-- Power-ups -->
             <div class="powerups-container">
                 <div class="powerup-wrapper">
                     <button class="powerup-btn" id="powerup-5050" title="احذف خيارين خاطئين">50/50</button>
@@ -154,7 +150,7 @@
                 </div>
             </div>
 
-            <!-- ترتيب الأندية (يظهر في وضع معين) -->
+            <!-- ترتيب الأندية -->
             <div id="club-standings" class="club-standings hidden"></div>
         </div>
 
@@ -200,14 +196,12 @@
                 </div>
             </div>
 
-            <!-- الإنجازات -->
             <div class="achievement-unlock hidden" id="achievement-unlock">
                 <span class="icon">🏆</span>
                 <span>إنجاز جديد: </span>
                 <span id="achievement-name"></span>
             </div>
 
-            <!-- أزرار النهاية -->
             <div class="end-buttons">
                 <button class="play-btn" id="restart-btn">🔄 العب مجددًا</button>
                 <button class="secondary-btn" id="share-btn">📤 شارك</button>
@@ -279,22 +273,18 @@
                     <h3>🏆 قاعة المشاهير</h3>
                     <button class="close-btn" id="close-hall-of-fame-btn">✕</button>
                 </div>
-                <div class="modal-body" id="hall-of-fame-content">
-                    <!-- المحتوى هيتولد من JavaScript -->
-                </div>
+                <div class="modal-body" id="hall-of-fame-content"></div>
             </div>
         </div>
 
-        <!-- مجموعتي (سوق الانتقالات) -->
+        <!-- مجموعتي -->
         <div class="modal-overlay hidden" id="collection-modal">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>📚 مجموعتي</h3>
                     <button class="close-btn" id="close-collection-btn">✕</button>
                 </div>
-                <div class="modal-body" id="collection-content">
-                    <!-- المحتوى هيتولد من JavaScript -->
-                </div>
+                <div class="modal-body" id="collection-content"></div>
                 <div class="modal-footer">
                     <button class="secondary-btn" id="open-market-btn">🏪 سوق الانتقالات</button>
                 </div>
