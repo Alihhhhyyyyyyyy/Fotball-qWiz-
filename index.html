@@ -10,9 +10,9 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="game-wrapper">
+    <div class="game-container">
         <!-- شاشة البداية -->
-        <div id="start-screen" class="screen">
+        <div id="start-screen" class="screen active">
             <div class="top-bar">
                 <button class="icon-btn" id="settings-btn">⚙️</button>
                 <div class="stats">
@@ -22,12 +22,12 @@
                 <button class="icon-btn" id="leaderboard-btn">📊</button>
             </div>
 
-            <div class="logo">
-                <img src="https://i.postimg.cc/bJs4zzxS/1000060703.png" alt="شعار">
+            <div class="logo-area">
+                <img src="https://i.postimg.cc/bJs4zzxS/1000060703.png" alt="شعار" class="logo">
             </div>
 
-            <div class="level-box">
-                <div class="level-badge" id="level-name">مبتدئ</div>
+            <div class="level-area">
+                <div class="level-badge" id="level-badge">مبتدئ</div>
                 <div class="xp-bar">
                     <div class="xp-fill" id="xp-fill" style="width: 0%"></div>
                 </div>
@@ -36,8 +36,175 @@
             <button class="play-btn" id="play-btn">ابدأ اللعب</button>
         </div>
 
-        <!-- باقي الشاشات (نفس الكود القديم) -->
-        <!-- ... -->
+        <!-- شاشة اختيار الوضع -->
+        <div id="mode-screen" class="screen hidden">
+            <div class="screen-header">
+                <button class="back-btn" id="back-from-mode">← رجوع</button>
+                <h2>اختر نمط اللعب</h2>
+            </div>
+            <div class="mode-grid">
+                <button class="mode-card" id="normal-mode">
+                    <span class="mode-icon">🎮</span>
+                    <span class="mode-name">عادي</span>
+                </button>
+                <button class="mode-card" id="challenge-mode">
+                    <span class="mode-icon">⚡</span>
+                    <span class="mode-name">تحدي</span>
+                </button>
+                <button class="mode-card" id="boss-mode">
+                    <span class="mode-icon">🔥</span>
+                    <span class="mode-name">معركة النجوم</span>
+                </button>
+                <button class="mode-card" id="blind-mode">
+                    <span class="mode-icon">🕶️</span>
+                    <span class="mode-name">وضع أعمى</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- شاشة اختيار الصعوبة -->
+        <div id="difficulty-screen" class="screen hidden">
+            <div class="screen-header">
+                <button class="back-btn" id="back-from-difficulty">← رجوع</button>
+                <h2>اختر مستوى الصعوبة</h2>
+            </div>
+            <div class="difficulty-grid">
+                <button class="diff-card easy" data-diff="easy">
+                    <span class="diff-name">سهل</span>
+                    <span class="diff-desc">30 ثانية</span>
+                </button>
+                <button class="diff-card medium" data-diff="medium">
+                    <span class="diff-name">متوسط</span>
+                    <span class="diff-desc">20 ثانية</span>
+                </button>
+                <button class="diff-card hard" data-diff="hard">
+                    <span class="diff-name">صعب</span>
+                    <span class="diff-desc">15 ثانية</span>
+                </button>
+                <button class="diff-card expert" data-diff="expert">
+                    <span class="diff-name">خبير</span>
+                    <span class="diff-desc">10 ثواني</span>
+                </button>
+                <button class="diff-card legend" data-diff="legend">
+                    <span class="diff-name">أسطورة</span>
+                    <span class="diff-desc">8 ثواني</span>
+                </button>
+            </div>
+            <button class="gift-btn" id="gift-btn">🎁 هدية اليوم</button>
+        </div>
+
+        <!-- شاشة اللعب -->
+        <div id="game-screen" class="screen hidden">
+            <div class="game-header">
+                <button class="game-back" id="back-from-game">← رجوع</button>
+                <div class="game-stats">
+                    <span class="stat-item">🏆 <span id="score">0</span></span>
+                    <span class="stat-item">💰 <span id="game-cash">100</span></span>
+                    <span class="stat-item">⚡ <span id="points">30</span></span>
+                </div>
+            </div>
+
+            <div class="timer-box">
+                <div class="timer-bar-bg">
+                    <div class="timer-fill" id="timer-fill" style="width: 100%"></div>
+                </div>
+                <div id="challenge-timer" class="challenge-timer hidden">⏰ <span>60</span> ث</div>
+            </div>
+
+            <div class="player-level-row">
+                <span>⭐ <span id="player-level">مبتدئ</span></span>
+                <span>🔥 <span id="streak">0</span></span>
+            </div>
+
+            <div class="info-card" id="info-box">
+                <p>• مرحباً بك في اللعبة</p>
+            </div>
+
+            <button class="next-btn" id="next-info-btn">▶ المعلومة التالية</button>
+
+            <div class="choices-area" id="choices-area"></div>
+
+            <div class="powerups-row">
+                <div class="powerup-item">
+                    <button class="powerup-btn" id="powerup-5050">50/50</button>
+                    <span class="powerup-cost">15</span>
+                </div>
+                <div class="powerup-item">
+                    <button class="powerup-btn" id="powerup-nation">🌍</button>
+                    <span class="powerup-cost">20</span>
+                </div>
+                <div class="powerup-item">
+                    <button class="powerup-btn" id="powerup-club">👕</button>
+                    <span class="powerup-cost">25</span>
+                </div>
+                <div class="powerup-item">
+                    <button class="powerup-btn" id="powerup-hint">🔤</button>
+                    <span class="powerup-cost">30</span>
+                </div>
+                <div class="powerup-item">
+                    <button class="powerup-btn" id="powerup-swap">🔄</button>
+                    <span class="powerup-cost">35</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- شاشة النهاية -->
+        <div id="end-screen" class="screen hidden">
+            <h2>انتهت اللعبة</h2>
+            <div class="final-stats">
+                <div class="final-stat">🏆 النتيجة: <span id="final-score">0</span></div>
+                <div class="final-stat">💰 الكاش: <span id="final-cash">0</span></div>
+                <div class="final-stat">🔥 السلسلة: <span id="final-streak">0</span></div>
+                <div class="final-stat">⭐ الخبرة: <span id="final-xp">0</span></div>
+            </div>
+            <div class="end-buttons">
+                <button class="end-btn" id="restart-btn">🔄 العب مجدداً</button>
+                <button class="end-btn secondary" id="back-to-menu">🏠 القائمة</button>
+            </div>
+        </div>
+
+        <!-- Overlay النتائج -->
+        <div id="result-overlay" class="overlay hidden">
+            <div class="overlay-text" id="result-text"></div>
+        </div>
+
+        <!-- مودال الإعدادات -->
+        <div id="settings-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>الإعدادات</h3>
+                    <button class="close-btn" id="close-settings">✕</button>
+                </div>
+                <div class="setting-row">
+                    <span>🔊 الصوت</span>
+                    <label class="switch">
+                        <input type="checkbox" id="sound-toggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-row">
+                    <span>📳 الاهتزاز</span>
+                    <label class="switch">
+                        <input type="checkbox" id="vibration-toggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <button class="reset-btn" id="reset-data">🔄 إعادة تعيين البيانات</button>
+            </div>
+        </div>
+
+        <!-- مودال المتصدرين -->
+        <div id="leaderboard-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>لوحة المتصدرين</h3>
+                    <button class="close-btn" id="close-leaderboard">✕</button>
+                </div>
+                <ul class="leaderboard-list" id="leaderboard-list">
+                    <li>لا توجد نتائج بعد</li>
+                </ul>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
