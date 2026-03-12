@@ -3,7 +3,6 @@
     {
       "id": 1,
       "name": "ليونيل ميسي",
-      "nameEn": "Lionel Messi",
       "image": "images/messi.jpg",
       "club": "إنتر ميامي",
       "nationality": "الأرجنتين",
@@ -13,7 +12,6 @@
     {
       "id": 2,
       "name": "كريستيانو رونالدو",
-      "nameEn": "Cristiano Ronaldo",
       "image": "images/ronaldo.jpg",
       "club": "النصر",
       "nationality": "البرتغال",
@@ -22,103 +20,12 @@
     },
     {
       "id": 3,
-      "name": "كيليان مبابي",
-      "nameEn": "Kylian Mbappé",
-      "image": "images/mbappe.jpg",
-      "club": "باريس سان جيرمان",
-      "nationality": "فرنسا",
-      "position": "مهاجم",
-      "level": 1
-    },
-    {
-      "id": 4,
-      "name": "إيرلينغ هالاند",
-      "nameEn": "Erling Haaland",
-      "image": "images/haaland.jpg",
-      "club": "مانشستر سيتي",
-      "nationality": "النرويج",
-      "position": "مهاجم",
-      "level": 1
-    },
-    {
-      "id": 5,
       "name": "محمد صلاح",
-      "nameEn": "Mohamed Salah",
       "image": "images/salah.jpg",
       "club": "ليفربول",
       "nationality": "مصر",
       "position": "جناح",
-      "level": 2
-    },
-    {
-      "id": 6,
-      "name": "نيمار جونيور",
-      "nameEn": "Neymar Jr",
-      "image": "images/neymar.jpg",
-      "club": "الهلال",
-      "nationality": "البرازيل",
-      "position": "جناح",
-      "level": 2
-    },
-    {
-      "id": 7,
-      "name": "كريم بنزيما",
-      "nameEn": "Karim Benzema",
-      "image": "images/benzema.jpg",
-      "club": "الاتحاد",
-      "nationality": "فرنسا",
-      "position": "مهاجم",
-      "level": 2
-    },
-    {
-      "id": 8,
-      "name": "كيفن دي بروين",
-      "nameEn": "Kevin De Bruyne",
-      "image": "images/debruyne.jpg",
-      "club": "مانشستر سيتي",
-      "nationality": "بلجيكا",
-      "position": "وسط",
-      "level": 3
-    },
-    {
-      "id": 9,
-      "name": "فيرجيل فان دايك",
-      "nameEn": "Virgil van Dijk",
-      "image": "images/vandijk.jpg",
-      "club": "ليفربول",
-      "nationality": "هولندا",
-      "position": "مدافع",
-      "level": 3
-    },
-    {
-      "id": 10,
-      "name": "تيبو كورتوا",
-      "nameEn": "Thibaut Courtois",
-      "image": "images/courtois.jpg",
-      "club": "ريال مدريد",
-      "nationality": "بلجيكا",
-      "position": "حارس مرمى",
-      "level": 3
-    },
-    {
-      "id": 11,
-      "name": "لوكا مودريتش",
-      "nameEn": "Luka Modrić",
-      "image": "images/modric.jpg",
-      "club": "ريال مدريد",
-      "nationality": "كرواتيا",
-      "position": "وسط",
-      "level": 4
-    },
-    {
-      "id": 12,
-      "name": "روبرت ليفاندوفسكي",
-      "nameEn": "Robert Lewandowski",
-      "image": "images/lewandowski.jpg",
-      "club": "برشلونة",
-      "nationality": "بولندا",
-      "position": "مهاجم",
-      "level": 4
+      "level": 1
     }
   ]
 }
