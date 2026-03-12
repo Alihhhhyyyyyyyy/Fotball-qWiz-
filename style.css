@@ -24,6 +24,7 @@ body {
     align-items: center;
     min-height: 100vh;
     overflow: hidden;
+    transition: background-color 0.5s ease;
 }
 
 .game-wrapper {
@@ -49,6 +50,7 @@ body {
     width: 100%;
     height: 100%;
     animation: fadeIn 0.5s ease-out;
+    overflow-y: auto;
 }
 
 .hidden {
@@ -77,8 +79,15 @@ body {
     100% { transform: rotate(360deg); }
 }
 
+@keyframes glow {
+    0% { box-shadow: 0 0 5px gold; }
+    50% { box-shadow: 0 0 20px gold; }
+    100% { box-shadow: 0 0 5px gold; }
+}
+
 #start-screen {
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 10px;
 }
 
 .header-bar {
@@ -86,6 +95,7 @@ body {
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    margin-bottom: 10px;
 }
 
 .icon-btn {
@@ -127,11 +137,12 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    margin: 10px 0;
 }
 
 .game-logo {
-    width: 80%;
-    max-width: 250px;
+    width: 70%;
+    max-width: 200px;
 }
 
 .player-level-container {
@@ -139,6 +150,7 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 10px;
+    margin: 10px 0;
 }
 
 .level-badge {
@@ -166,30 +178,30 @@ body {
 }
 
 .difficulty-selector {
-    margin: 15px 0;
+    margin: 10px 0;
     text-align: center;
 }
 
 .difficulty-selector h4 {
     color: var(--text-muted);
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     font-size: 1em;
 }
 
 .difficulty-buttons {
     display: flex;
-    gap: 8px;
+    gap: 5px;
     justify-content: center;
     flex-wrap: wrap;
 }
 
 .difficulty-btn {
-    padding: 8px 15px;
+    padding: 6px 12px;
     border: 2px solid;
     background: transparent;
     color: var(--text-color);
     border-radius: 20px;
-    font-size: 0.9em;
+    font-size: 0.8em;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -200,11 +212,13 @@ body {
 .difficulty-btn[data-difficulty="medium"] { border-color: #FF9800; color: #FF9800; }
 .difficulty-btn[data-difficulty="hard"] { border-color: #f44336; color: #f44336; }
 .difficulty-btn[data-difficulty="expert"] { border-color: #9C27B0; color: #9C27B0; }
+.difficulty-btn[data-difficulty="legend"] { border-color: #FFD700; color: #FFD700; }
 
 .difficulty-btn.active[data-difficulty="easy"] { background: #4CAF50; color: white; }
 .difficulty-btn.active[data-difficulty="medium"] { background: #FF9800; color: white; }
 .difficulty-btn.active[data-difficulty="hard"] { background: #f44336; color: white; }
 .difficulty-btn.active[data-difficulty="expert"] { background: #9C27B0; color: white; }
+.difficulty-btn.active[data-difficulty="legend"] { background: #FFD700; color: black; }
 
 .difficulty-btn:hover {
     transform: scale(1.05);
@@ -212,18 +226,19 @@ body {
 
 .mode-selector {
     display: flex;
-    gap: 10px;
+    gap: 5px;
     justify-content: center;
-    margin: 15px 0;
+    margin: 10px 0;
+    flex-wrap: wrap;
 }
 
 .mode-btn {
     background: rgba(255, 255, 255, 0.1);
     border: 2px solid transparent;
     color: var(--text-color);
-    padding: 10px 20px;
+    padding: 8px 15px;
     border-radius: 25px;
-    font-size: 1em;
+    font-size: 0.9em;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -264,6 +279,24 @@ body {
     text-align: center;
 }
 
+.daily-gift {
+    text-align: center;
+    margin: 10px 0;
+}
+
+.gift-btn {
+    background: linear-gradient(45deg, #FFD700, #FFA500);
+    color: #1e3c72;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 30px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    animation: glow 2s infinite;
+    width: 100%;
+}
+
 .play-btn {
     background: linear-gradient(45deg, var(--success-color), #4CAF50);
     color: var(--text-color);
@@ -276,6 +309,7 @@ body {
     cursor: pointer;
     box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
     transition: transform 0.2s;
+    margin-top: 10px;
 }
 
 .play-btn:hover {
@@ -286,7 +320,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .icon-btn-game {
@@ -346,34 +380,72 @@ body {
     color: var(--accent-color);
 }
 
+.player-image-container {
+    text-align: center;
+    margin: 10px 0;
+}
+
+.player-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 3px solid gold;
+    object-fit: cover;
+    animation: pulse 2s infinite;
+}
+
 .info-box {
     background: linear-gradient(135deg, rgba(36, 59, 85, 0.9), rgba(20, 30, 48, 0.9));
-    padding: 25px;
+    padding: 20px;
     border-radius: 20px;
-    min-height: 180px;
-    margin-bottom: 20px;
-    font-size: 1.2em;
+    min-height: 100px;
+    margin: 10px 0;
+    font-size: 1.1em;
     line-height: 1.6;
     backdrop-filter: blur(5px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
 .info-box p {
-    margin: 10px 0;
-    padding: 10px;
+    margin: 8px 0;
+    padding: 8px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 10px;
     animation: fadeIn 0.3s ease-out;
 }
 
+.next-info-container {
+    text-align: center;
+    margin: 10px 0;
+}
+
+.next-info-btn {
+    background: gold;
+    color: #1e3c72;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    width: auto;
+    display: inline-block;
+}
+
+.next-info-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .choices {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 10px;
     flex-grow: 1;
-    max-height: 400px;
+    max-height: 300px;
     overflow-y: auto;
     padding: 5px;
+    margin: 10px 0;
 }
 
 .choice-btn {
@@ -382,9 +454,9 @@ body {
     border: 2px solid transparent;
     border-image: linear-gradient(45deg, var(--accent-color), #FFD700);
     border-image-slice: 1;
-    padding: 18px;
+    padding: 15px;
     border-radius: 12px;
-    font-size: 1.2em;
+    font-size: 1.1em;
     font-family: var(--font-family);
     font-weight: 600;
     cursor: pointer;
@@ -417,8 +489,8 @@ body {
 .powerups-container {
     display: flex;
     justify-content: space-around;
-    margin-top: 20px;
-    gap: 5px;
+    margin: 10px 0;
+    gap: 3px;
     flex-wrap: wrap;
 }
 
@@ -433,10 +505,10 @@ body {
     background-color: rgba(255, 255, 255, 0.1);
     border: 2px solid var(--accent-color);
     color: var(--accent-color);
-    width: 55px;
-    height: 55px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
-    font-size: 1.3em;
+    font-size: 1.2em;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -458,8 +530,8 @@ body {
 }
 
 .powerup-btn:hover::before {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
 }
 
 .powerup-btn:not(:disabled):hover {
@@ -474,9 +546,9 @@ body {
 }
 
 .powerup-cost {
-    font-size: 0.8em;
+    font-size: 0.7em;
     color: var(--accent-color);
-    margin-top: 5px;
+    margin-top: 3px;
     font-weight: 600;
 }
 
@@ -484,32 +556,40 @@ body {
     animation: pulse 0.5s infinite;
 }
 
+.club-standings {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px 0;
+    font-size: 0.9em;
+}
+
 #end-screen {
     justify-content: center;
     align-items: center;
     text-align: center;
-    gap: 20px;
+    gap: 15px;
     overflow-y: auto;
 }
 
 #end-screen h2 {
-    font-size: 2.5em;
+    font-size: 2.2em;
     color: var(--accent-color);
 }
 
 .end-stats-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
+    gap: 10px;
     width: 100%;
-    margin: 20px 0;
+    margin: 15px 0;
 }
 
 .stat-card {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 15px;
-    padding: 15px;
+    padding: 12px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -518,16 +598,16 @@ body {
 }
 
 .stat-icon {
-    font-size: 2em;
+    font-size: 1.8em;
 }
 
 .stat-label {
-    font-size: 0.9em;
+    font-size: 0.8em;
     color: var(--text-muted);
 }
 
 .stat-value {
-    font-size: 1.3em;
+    font-size: 1.2em;
     font-weight: 700;
     color: var(--accent-color);
 }
@@ -535,17 +615,17 @@ body {
 .achievement-unlock {
     background: linear-gradient(45deg, var(--accent-color), #FFD700);
     color: var(--bg-color);
-    padding: 15px 25px;
+    padding: 12px 20px;
     border-radius: 30px;
     font-weight: 700;
     animation: pulse 1s infinite;
-    margin: 15px 0;
+    margin: 10px 0;
 }
 
 .end-buttons {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
     width: 80%;
 }
 
@@ -553,9 +633,9 @@ body {
     background: none;
     border: 2px solid var(--primary-color);
     color: var(--text-color);
-    padding: 15px;
+    padding: 12px;
     border-radius: 15px;
-    font-size: 1.2em;
+    font-size: 1.1em;
     font-weight: 700;
     font-family: var(--font-family);
     cursor: pointer;
@@ -582,7 +662,7 @@ body {
 }
 
 .result-overlay h2 {
-    font-size: 4em;
+    font-size: 3em;
     color: var(--accent-color);
     animation: pulse 0.5s;
 }
@@ -593,7 +673,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.8);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -603,10 +683,12 @@ body {
 
 .modal-content {
     background: var(--primary-color);
-    padding: 20px;
+    padding: 15px;
     border-radius: 15px;
     width: 90%;
     max-width: 350px;
+    max-height: 80vh;
+    overflow-y: auto;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
 }
 
@@ -614,40 +696,49 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 10px;
+    padding-bottom: 8px;
 }
 
 .modal-header h3 {
-    font-size: 1.5em;
+    font-size: 1.3em;
 }
 
 .close-btn {
     background: none;
     border: none;
     color: var(--text-color);
-    font-size: 2em;
+    font-size: 1.8em;
     cursor: pointer;
 }
 
 .modal-body {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .setting-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 1.2em;
-    padding: 15px 0;
+    font-size: 1.1em;
+    padding: 12px 0;
+}
+
+.theme-select {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid gold;
+    padding: 8px;
+    border-radius: 8px;
+    font-family: var(--font-family);
 }
 
 .switch {
     position: relative;
     display: inline-block;
-    width: 60px;
-    height: 34px;
+    width: 50px;
+    height: 28px;
 }
 
 .switch input {
@@ -665,16 +756,16 @@ body {
     bottom: 0;
     background-color: #ccc;
     transition: .4s;
-    border-radius: 34px;
+    border-radius: 28px;
 }
 
 .slider:before {
     position: absolute;
     content: "";
-    height: 26px;
-    width: 26px;
-    left: 4px;
-    bottom: 4px;
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
     background-color: white;
     transition: .4s;
     border-radius: 50%;
@@ -685,12 +776,12 @@ input:checked + .slider {
 }
 
 input:checked + .slider:before {
-    transform: translateX(26px);
+    transform: translateX(22px);
 }
 
 .modal-footer {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding-top: 15px;
+    padding-top: 10px;
     text-align: center;
 }
 
@@ -701,7 +792,7 @@ input:checked + .slider:before {
 .leaderboard-list li {
     display: flex;
     justify-content: space-between;
-    padding: 10px;
+    padding: 8px;
     border-radius: 5px;
     margin-bottom: 5px;
 }
@@ -717,7 +808,7 @@ input:checked + .slider:before {
 
 .leaderboard-list .player-name {
     flex-grow: 1;
-    margin: 0 15px;
+    margin: 0 10px;
 }
 
 .loading-spinner {
@@ -726,7 +817,7 @@ input:checked + .slider:before {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.9);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -740,16 +831,16 @@ input:checked + .slider:before {
 }
 
 .spinner-icon {
-    width: 50px;
-    height: 50px;
-    border: 5px solid var(--accent-color);
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--accent-color);
     border-top-color: transparent;
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    margin: 0 auto 15px;
+    margin: 0 auto 10px;
 }
 
 .loading-spinner p {
-    font-size: 1.2em;
+    font-size: 1.1em;
     color: var(--accent-color);
 }
